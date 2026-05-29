@@ -81,7 +81,8 @@ app.get('/health', (req, res) => {
     dataDir: process.env.DATA_DIR || 'default',
     dataFile: DATA_FILE,
     records: db.submissions?.length || 0,
-    mongo: useMongo()
+    mongo: useMongo(),
+    version: 'v19-test'
   });
 });
 
