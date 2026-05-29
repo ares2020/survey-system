@@ -107,3 +107,8 @@ export function startServer() {
     process.exit(1);
   });
 }
+
+// 直接执行时启动服务（兼容 Render rootDir=server 配置）
+if (import.meta.url === `file://${process.argv[1]}`) {
+  startServer();
+}
