@@ -1665,7 +1665,23 @@ function submitForm() {
  body: JSON.stringify(data)
  })
  .then(r => {
- if (!r.ok) throw new Error('提交失败: ' + r.status);
+ if (!r.ok) {
+ // 检查是否为 HTML 响应（WAF 拦截）
+ const contentType = r.headers.get('content-type');
+ if (contentType && contentType.includes('text/html')) {
+ throw new Error('输入内容包含不允许的字符，请修改后重试');
+ }
+ // 尝试解析 JSON 错误
+ return r.json().then(errData => {
+ let msg = errData.message || '提交失败';
+ if (errData.errors && errData.errors.length > 0) {
+ msg = errData.errors.join('；');
+ }
+ throw new Error(msg);
+ }).catch(() => {
+ throw new Error('提交失败: ' + r.status);
+ });
+ }
  return r.json();
  })
  .then(res => {
@@ -2128,13 +2144,27 @@ window.addEventListener('beforeunload', function() {
 // 每30秒自动保存
 setInterval(autoSave, 30000);
 
-// ========== 拖拽上传 ==========
+// ========== 页面加载时检查 id 参数 ==========
 document.addEventListener('DOMContentLoaded', () => {
+ const urlParams = new URLSearchParams(window.location.search);
+ const id = urlParams.get('id');
+ if (id) {
+  // 显示已提交提示，隐藏表单
+  document.querySelector('.survey-header').style.display = 'none';
+  document.querySelector('.progress-bar').style.display = 'none';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('successPage').classList.add('show');
+  document.getElementById('shareLink').value = window.location.origin + '/survey?id=' + id;
+  // 隐藏提交按钮，显示已提交状态
+  const btn = document.getElementById('submitBtn');
+  if (btn) btn.style.display = 'none';
+ }
+
  // 清除错误样式
  document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => {
- el.addEventListener('input', function() {
- this.classList.remove('error');
- });
+  el.addEventListener('input', function() {
+   this.classList.remove('error');
+  });
  });
 });
 </script>

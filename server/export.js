@@ -86,16 +86,31 @@ function buildStatsSheet(startDate, endDate) {
   const lectureActiveSubs = subs.filter(s => num(s.q8_weekly_lectures) > 0);
   const provincialDesc = joinTexts(lectureActiveSubs, 'q15_provincial_desc') || '—';
 
-  // --- 校级宣讲（累计开展X场，覆盖Y人次）---
+  // --- 校级宣讲（本周X场覆盖Y人；累计X场覆盖Y人）---
+  const wLectures = sum(subs, 'q8_weekly_lectures');
+  const wReach    = sum(subs, 'q9_weekly_reach');
   const culLectures = sum(subs, 'q10_cumul_lectures');
   const culReach    = sum(subs, 'q11_cumul_reach');
-  const schoolLectureText = (culLectures > 0 || culReach > 0)
-    ? `累计开展${culLectures > 0 ? culLectures : '（未填）'}场，覆盖${culReach > 0 ? culReach : '（未填）'}人次`
-    : '（未填）';
+  let schoolLectureText = '';
+  if (wLectures > 0 || wReach > 0) {
+    schoolLectureText += `本周${wLectures || 0}场，覆盖${wReach || 0}人次`;
+  }
+  if (culLectures > 0 || culReach > 0) {
+    if (schoolLectureText) schoolLectureText += '；';
+    schoolLectureText += `累计${culLectures || 0}场，覆盖${culReach || 0}人次`;
+  }
+  if (!schoolLectureText) schoolLectureText = '（未填）';
 
-  // --- 主题团日（累计X场）---
+  // --- 主题团日（本周X场；累计X场）---
+  const wTuanri = sum(subs, 'q13_weekly_tuanri');
   const culTuanri = sum(subs, 'q14_cumul_tuanri');
-  const tuanriText = culTuanri > 0 ? `累计开展${culTuanri}场` : '—';
+  let tuanriText = '';
+  if (wTuanri > 0) tuanriText += `本周${wTuanri}场`;
+  if (culTuanri > 0) {
+    if (tuanriText) tuanriText += '；';
+    tuanriText += `累计${culTuanri}场`;
+  }
+  if (!tuanriText) tuanriText = '—';
 
   // --- 千校万岗：招聘活动 ---
   const wRecruit    = sum(subs, 'q16_weekly_recruit');

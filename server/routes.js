@@ -218,7 +218,7 @@ function mapSubmission(body) {
   const email = cleanString(body.email || '');
   const periodStart = cleanString(body.periodStart || '');
   const periodEnd = cleanString(body.periodEnd || '');
-  const deadline = cleanString(body.dataDeadline || body.deadline || '');
+  const deadline = '';  // dataDeadline 已废弃，前端不再采集
 
   // === 模块I: 就业引航计划 ===
   const m1 = body.module1 || {};
@@ -291,10 +291,10 @@ function mapSubmission(body) {
 
   // === 模块V: 其他工作 ===
   const m5 = body.module5 || {};
-  const q46_has_research = m5.hasResearch === true || m5.hasResearch === 'yes' ? '有' :
-                           (m5.hasResearch === false || m5.hasResearch === 'no' ? '无' : '');
-  const q48_has_publicity = m5.hasPublicity === true || m5.hasPublicity === 'yes' ? '有' :
-                            (m5.hasPublicity === false || m5.hasPublicity === 'no' ? '无' : '');
+  const q46_has_research = m5.hasResearch === true || m5.hasResearch === 'yes' ? '是' :
+                           (m5.hasResearch === false || m5.hasResearch === 'no' ? '否' : '');
+  const q48_has_publicity = m5.hasPublicity === true || m5.hasPublicity === 'yes' ? '是' :
+                            (m5.hasPublicity === false || m5.hasPublicity === 'no' ? '否' : '');
 
   // === 子表: 调研工作 (前端字段名转换) ===
   const research_items = [];
