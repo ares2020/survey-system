@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: survey-system
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: DATA_DIR
+        value: /opt/render/project/data
+      - key: MONGODB_URI
+        value: ""
+      - key: JWT_SECRET
+        generateValue: true
+
+    disk:
+      name: data
+      mountPath: /opt/render/project/data
+      sizeGB: 1

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>共青团服务和促进就业情况排摸</title>
+ <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+ <style>
+ * { box-sizing: border-box; margin: 0; padding: 0; }
+ body {
+ font-family: 'Noto Sans SC', -apple-system, sans-serif;
+ background: #f0f4f8;
+ min-height: 100vh;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ padding: 20px;
+ }
+ .container {
+ max-width: 560px;
+ width: 100%;
+ }
+ .header {
+ text-align: center;
+ margin-bottom: 32px;
+ }
+ .header h1 {
+ font-size: 22px;
+ font-weight: 700;
+ color: #1f2937;
+ line-height: 1.4;
+ }
+ .header p {
+ font-size: 14px;
+ color: #6b7280;
+ margin-top: 6px;
+ }
+ .cards {
+ display: flex;
+ flex-direction: column;
+ gap: 16px;
+ }
+ .card {
+ background: white;
+ border-radius: 12px;
+ padding: 24px;
+ box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+ border: 1px solid #e5e7eb;
+ cursor: pointer;
+ transition: all 0.2s ease;
+ text-decoration: none;
+ color: inherit;
+ display: flex;
+ align-items: center;
+ gap: 16px;
+ }
+ .card:hover {
+ box-shadow: 0 4px 12px rgba(37,99,235,0.12);
+ border-color: #bfdbfe;
+ transform: translateY(-1px);
+ }
+ .card-icon {
+ width: 48px; height: 48px;
+ border-radius: 12px;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 22px;
+ flex-shrink: 0;
+ }
+ .card-icon.blue { background: #dbeafe; }
+ .card-icon.green { background: #dcfce7; }
+ .card-icon.orange { background: #ffedd5; }
+ .card-content h3 {
+ font-size: 16px;
+ font-weight: 600;
+ color: #1f2937;
+ margin-bottom: 4px;
+ }
+ .card-content p {
+ font-size: 13px;
+ color: #6b7280;
+ line-height: 1.5;
+ }
+ .arrow {
+ margin-left: auto;
+ color: #9ca3af;
+ font-size: 18px;
+ transition: color 0.2s;
+ }
+ .card:hover .arrow { color: #2563eb; }
+ </style>
+</head>
+<body>
+ <div class="container">
+ <div class="header">
+ <h1>共青团服务和促进就业情况排摸</h1>
+ </div>
+ <div class="cards">
+ <a href="/survey.html" class="card">
+ <div class="card-icon blue">&#128196;</div>
+ <div class="card-content">
+ <h3>填写周报</h3>
+ <p>分享链接即可填写，无需注册账号。支持三页表单、自动校验、实时保存。</p>
+ </div>
+ <span class="arrow">&#8250;</span>
+ </a>
+ <a href="/admin.html" class="card">
+ <div class="card-icon green">&#128202;</div>
+ <div class="card-content">
+ <h3>管理后台</h3>
+ <p>管理员登录后可查看数据概览、提交记录、一键导出Excel汇总表。</p>
+ </div>
+ <span class="arrow">&#8250;</span>
+ </a>
+ <a href="/api/admin/export" class="card" onclick="alert('请先登录管理后台后使用导出功能');return false;">
+ <div class="card-icon orange">&#128229;</div>
+ <div class="card-content">
+ <h3>导出汇总表</h3>
+ <p>自动生成最新版《数据统计》+《活动情况》双Sheet Excel，匹配模板格式。</p>
+ </div>
+ <span class="arrow">&#8250;</span>
+ </a>
+ </div>
+
+ </div>
+</body>
+</html>

@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>就业周报管理系统</title>
+<style>
+/* ==================== 基础重置与变量 ==================== */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+--sidebar-width: 220px;
+--topbar-height: 56px;
+--primary: #2563eb;
+--primary-dark: #1d4ed8;
+--danger: #dc2626;
+--danger-dark: #b91c1c;
+--success: #16a34a;
+--warning: #d97706;
+--sidebar-bg: #1e293b;
+--sidebar-hover: #334155;
+--content-bg: #f1f5f9;
+--card-bg: #ffffff;
+--text-main: #1e293b;
+--text-muted: #64748b;
+--border: #e2e8f0;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--content-bg); color: var(--text-main); font-size: 14px; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; border: none; font-family: inherit; }
+input, select { font-family: inherit; font-size: 14px; }
+.hidden { display: none !important; }
+
+/* ==================== 登录页 ==================== */
+#loginPage { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+.login-card { background: var(--card-bg); padding: 40px 36px; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 400px; margin: 20px; }
+.login-card h2 { text-align: center; margin-bottom: 8px; font-size: 22px; color: var(--text-main); }
+.login-card .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 28px; font-size: 13px; }
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px; color: var(--text-main); }
+.form-group input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; outline: none; transition: border-color 0.2s; }
+.form-group input:focus { border-color: var(--primary); }
+.btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: var(--danger-dark); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #15803d; }
+.btn-secondary { background: #f1f5f9; color: var(--text-main); border: 1px solid var(--border); }
+.btn-secondary:hover { background: #e2e8f0; }
+.btn-block { width: 100%; padding: 12px; }
+.login-error { background: #fef2f2; color: var(--danger); padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; border: 1px solid #fecaca; display: none; }
+.login-error.show { display: block; }
+
+/* ==================== 主布局 ==================== */
+#mainLayout { display: none; min-height: 100vh; }
+#mainLayout.show { display: flex; }
+
+/* 顶部栏 */
+.topbar { position: fixed; top: 0; left: 0; right: 0; height: var(--topbar-height); background: var(--card-bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 100; }
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+.menu-toggle { display: none; background: none; font-size: 20px; color: var(--text-muted); padding: 4px; }
+.topbar h1 { font-size: 16px; font-weight: 600; color: var(--text-main); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.logout-btn { background: none; color: var(--text-muted); font-size: 13px; padding: 6px 12px; border-radius: 6px; }
+.logout-btn:hover { background: #f1f5f9; color: var(--danger); }
+.password-btn { background: none; color: var(--text-muted); font-size: 13px; padding: 6px 12px; border-radius: 6px; }
+.password-btn:hover { background: #f1f5f9; color: var(--primary); }
+
+/* 侧边栏 */
+.sidebar { position: fixed; top: var(--topbar-height); left: 0; width: var(--sidebar-width); bottom: 0; background: var(--sidebar-bg); color: #94a3b8; z-index: 99; transition: transform 0.3s ease; }
+.sidebar-nav { padding: 12px 0; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 13px 22px; cursor: pointer; transition: all 0.2s; font-size: 14px; border-left: 3px solid transparent; }
+.nav-item:hover { background: var(--sidebar-hover); color: #e2e8f0; }
+.nav-item.active { background: var(--sidebar-hover); color: #fff; border-left-color: var(--primary); }
+.nav-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+
+/* 内容区 */
+.content-area { margin-left: var(--sidebar-width); margin-top: var(--topbar-height); padding: 24px; min-height: calc(100vh - var(--topbar-height)); }
+.page-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; color: var(--text-main); }
+.page-section { display: none; }
+.page-section.active { display: block; }
+
+/* ==================== 概览页 ==================== */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 24px; }
+.stat-card { background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 16px; }
+.stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.stat-icon.blue { background: #eff6ff; }
+.stat-icon.green { background: #f0fdf4; }
+.stat-icon.orange { background: #fffbeb; }
+.stat-icon.red { background: #fef2f2; }
+.stat-icon.purple { background: #f5f3ff; }
+.stat-info h3 { font-size: 28px; font-weight: 700; color: var(--text-main); line-height: 1; margin-bottom: 6px; }
+.stat-info p { font-size: 13px; color: var(--text-muted); }
+
+/* CSS柱状图 */
+.chart-card { background: var(--card-bg); border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.chart-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 20px; color: var(--text-main); }
+.chart-container { display: flex; align-items: flex-end; gap: 16px; height: 200px; padding-bottom: 30px; position: relative; }
+.chart-bar-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; }
+.chart-bar { width: 100%; max-width: 60px; background: linear-gradient(to top, var(--primary), #60a5fa); border-radius: 6px 6px 0 0; transition: height 0.6s ease; min-height: 4px; position: relative; }
+.chart-bar:hover { opacity: 0.85; }
+.chart-tooltip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: var(--text-main); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; }
+.chart-bar-wrapper:hover .chart-tooltip { opacity: 1; }
+.chart-label { font-size: 12px; color: var(--text-muted); position: absolute; bottom: -26px; white-space: nowrap; }
+.chart-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); font-size: 13px; }
+
+/* ==================== 数据列表页 ==================== */
+.filter-bar { background: var(--card-bg); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.filter-bar input, .filter-bar select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; outline: none; min-width: 140px; }
+.filter-bar input:focus, .filter-bar select:focus { border-color: var(--primary); }
+.table-container { background: var(--card-bg); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table thead th { background: #f8fafc; padding: 14px 18px; text-align: left; font-weight: 600; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+.data-table tbody td { padding: 14px 18px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+.data-table tbody tr:nth-child(even) { background: #f8fafc; }
+.data-table tbody tr:hover { background: #f1f5f9; }
+.data-table tbody tr.expanded { background: #eff6ff !important; }
+.table-actions { display: flex; gap: 8px; }
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+
+/* 展开详情 */
+.detail-row td { padding: 0 !important; border-bottom: none !important; }
+.detail-content { padding: 20px 24px; background: #f8fafc; border-bottom: 1px solid var(--border); }
+.detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.detail-item { background: var(--card-bg); padding: 14px 16px; border-radius: 8px; border: 1px solid var(--border); }
+.detail-item label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.detail-item span { font-size: 13px; color: var(--text-main); font-weight: 500; }
+.detail-subtitle { font-size: 14px; font-weight: 600; color: var(--text-main); margin: 16px 0 10px 0; grid-column: 1 / -1; }
+
+/* 分页 */
+.pagination { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--card-bg); }
+.pagination-info { font-size: 13px; color: var(--text-muted); }
+.pagination-btns { display: flex; gap: 6px; }
+.pagination-btns button { padding: 6px 12px; font-size: 12px; border-radius: 6px; background: var(--card-bg); border: 1px solid var(--border); color: var(--text-main); }
+.pagination-btns button:hover:not(:disabled) { background: #f1f5f9; }
+.pagination-btns button:disabled { opacity: 0.4; cursor: not-allowed; }
+.pagination-btns button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* ==================== 导出页 ==================== */
+.export-card { background: var(--card-bg); border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); max-width: 600px; }
+.export-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.export-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.export-form { display: flex; flex-direction: column; gap: 16px; }
+.export-form .form-group { margin-bottom: 0; }
+.export-form label { font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block; }
+.export-form input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; outline: none; }
+.export-form input:focus { border-color: var(--primary); }
+.date-row { display: flex; gap: 16px; align-items: flex-end; }
+.date-row .form-group { flex: 1; }
+.export-note { margin-top: 20px; padding: 14px 16px; background: #eff6ff; border-radius: 8px; font-size: 12px; color: var(--text-muted); line-height: 1.8; }
+.export-note strong { color: var(--text-main); }
+
+/* 本周未提交高校卡片 */
+.unsubmitted-card { background: var(--card-bg); border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); max-width: 600px; margin-top: 24px; }
+.unsubmitted-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.unsubmitted-card .subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+.week-range { font-size: 13px; color: var(--primary); font-weight: 500; margin-bottom: 12px; padding: 8px 12px; background: #eff6ff; border-radius: 6px; display: inline-block; }
+.submission-progress { font-size: 14px; font-weight: 600; color: var(--text-main); margin-bottom: 16px; }
+.submission-progress .progress-num { color: var(--primary); }
+.school-list { max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 20px; }
+.school-list .school-item { padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 13px; display: flex; align-items: center; gap: 10px; }
+.school-list .school-item:last-child { border-bottom: none; }
+.school-list .school-item:nth-child(even) { background: #f8fafc; }
+.school-list .school-index { color: var(--text-muted); font-size: 12px; min-width: 28px; text-align: right; }
+.school-list .school-name { color: var(--text-main); flex: 1; }
+.school-list .empty-tip { padding: 32px 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
+.school-list .success-tip { padding: 24px 20px; text-align: center; color: var(--success); font-size: 13px; font-weight: 500; }
+
+/* ==================== 密码修改对话框 ==================== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 250; display: none; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal-dialog { background: var(--card-bg); border-radius: 12px; padding: 28px 32px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: modalSlideIn 0.25s ease; }
+@keyframes modalSlideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+.modal-dialog h3 { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text-main); }
+.modal-dialog .form-group input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; outline: none; }
+.modal-dialog .form-group input:focus { border-color: var(--primary); }
+.modal-dialog .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 13px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+.modal-error { background: #fef2f2; color: var(--danger); padding: 8px 12px; border-radius: 6px; font-size: 12px; border: 1px solid #fecaca; margin-bottom: 12px; display: none; }
+.modal-error.show { display: block; }
+
+/* ==================== 审计日志 ==================== */
+.audit-filter-bar { background: var(--card-bg); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.audit-filter-bar select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; outline: none; min-width: 140px; }
+.audit-filter-bar select:focus { border-color: var(--primary); }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.badge-create { background: #f0fdf4; color: #15803d; }
+.badge-update { background: #eff6ff; color: #1d4ed8; }
+.badge-delete { background: #fef2f2; color: #b91c1c; }
+.badge-login { background: #f8fafc; color: #475569; border: 1px solid var(--border); }
+.badge-export { background: #fffbeb; color: #b45309; }
+.badge-password { background: #f5f3ff; color: #7c3aed; }
+
+/* ==================== 批量导入 ==================== */
+.import-card { background: var(--card-bg); border-radius: 12px; padding: 32px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); max-width: 600px; margin-top: 24px; }
+.import-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.import-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+.import-area { border: 2px dashed var(--border); border-radius: 12px; padding: 32px 24px; text-align: center; transition: border-color 0.2s; }
+.import-area:hover { border-color: var(--primary); }
+.import-area .import-icon { font-size: 36px; margin-bottom: 12px; }
+.import-area .import-text { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+.import-area input[type="file"] { display: none; }
+.import-result { margin-top: 20px; padding: 16px; border-radius: 8px; font-size: 13px; }
+.import-result.success { background: #f0fdf4; border: 1px solid #bbf7d0; }
+.import-result.error { background: #fef2f2; border: 1px solid #fecaca; }
+.import-result .result-title { font-weight: 600; margin-bottom: 8px; }
+.import-result .fail-list { max-height: 200px; overflow-y: auto; margin-top: 8px; }
+.import-result .fail-item { padding: 4px 0; color: var(--danger); font-size: 12px; border-bottom: 1px solid #fecaca; }
+
+/* ==================== 加载与空状态 ==================== */
+.loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; z-index: 200; }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state { text-align: center; padding: 48px 20px; color: var(--text-muted); font-size: 13px; }
+.empty-state svg { width: 64px; height: 64px; margin-bottom: 12px; opacity: 0.3; }
+.toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 8px; color: #fff; font-size: 13px; font-weight: 500; z-index: 300; transform: translateX(150%); transition: transform 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.toast.show { transform: translateX(0); }
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+
+/* 遮罩 */
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 98; }
+
+/* ==================== 响应式 ==================== */
+@media (max-width: 1024px) {
+.stats-grid { grid-template-columns: repeat(2, 1fr); }
+.detail-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+:root { --sidebar-width: 0; }
+.sidebar { transform: translateX(-220px); width: 220px; }
+.sidebar.open { transform: translateX(0); }
+.content-area { margin-left: 0; padding: 16px; }
+.menu-toggle { display: block; }
+.stats-grid { grid-template-columns: 1fr; }
+.detail-grid { grid-template-columns: 1fr; }
+.filter-bar { flex-direction: column; align-items: stretch; }
+.filter-bar input, .filter-bar select { width: 100%; }
+.date-row { flex-direction: column; }
+.sidebar-overlay.show { display: block; }
+.topbar h1 { font-size: 14px; }
+.data-table { font-size: 12px; }
+.data-table thead th, .data-table tbody td { padding: 10px 12px; }
+.modal-dialog { margin: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 登录页 ==================== -->
+<div id="loginPage">
+<div class="login-card">
+<h2>🔐 管理后台登录</h2>
+<p class="subtitle">就业周报管理系统</p>
+<div class="login-error" id="loginError"></div>
+<form id="loginForm">
+<div class="form-group">
+<label>用户名</label>
+<input type="text" id="username" placeholder="请输入用户名" required autocomplete="username">
+</div>
+<div class="form-group">
+<label>密码</label>
+<input type="password" id="password" placeholder="请输入密码" required autocomplete="current-password">
+</div>
+<button type="submit" class="btn btn-primary btn-block" id="loginBtn">登 录</button>
+</form>
+</div>
+</div>
+
+<!-- ==================== 主布局 ==================== -->
+<div id="mainLayout">
+<!-- 顶部栏 -->
+<div class="topbar">
+<div class="topbar-left">
+<button class="menu-toggle" id="menuToggle">☰</button>
+<h1>就业周报管理系统</h1>
+</div>
+<div class="topbar-right">
+<button class="password-btn" id="passwordBtn">🔑 修改密码</button>
+<button class="logout-btn" id="logoutBtn">🚪 退出登录</button>
+</div>
+</div>
+
+<!-- 遮罩 -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- 侧边栏 -->
+<div class="sidebar" id="sidebar">
+<div class="sidebar-nav">
+<div class="nav-item active" data-page="overview">
+<span class="nav-icon">📊</span>
+<span>概览</span>
+</div>
+<div class="nav-item" data-page="list">
+<span class="nav-icon">📋</span>
+<span>数据列表</span>
+</div>
+<div class="nav-item" data-page="export">
+<span class="nav-icon">📥</span>
+<span>导出报表</span>
+</div>
+<div class="nav-item" data-page="recycleBin">
+<span class="nav-icon">🗑️</span>
+<span>回收站</span>
+</div>
+<div class="nav-item" data-page="auditLog">
+<span class="nav-icon">📋</span>
+<span>审计日志</span>
+</div>
+</div>
+</div>
+
+<!-- 内容区 -->
+<div class="content-area">
+<!-- 概览页 -->
+<div class="page-section active" id="pageOverview">
+<h2 class="page-title">数据概览</h2>
+<div class="stats-grid" id="statsGrid">
+<div class="stat-card">
+<div class="stat-icon blue">📄</div>
+<div class="stat-info">
+<h3 id="statTotal">-</h3>
+<p>总提交数</p>
+</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon green">📈</div>
+<div class="stat-info">
+<h3 id="statThisWeek">-</h3>
+<p>本周新增</p>
+</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon orange">🏫</div>
+<div class="stat-info">
+<h3 id="statSchools">-</h3>
+<p>覆盖高校数</p>
+</div>
+</div>
+<div class="stat-card">
+<div class="stat-icon red">⏳</div>
+<div class="stat-info">
+<h3 id="statPending">-</h3>
+<p>待处理数</p>
+</div>
+</div>
+</div>
+<div class="chart-card">
+<h3>📈 最近7周提交趋势</h3>
+<div class="chart-container" id="trendChart">
+<div class="chart-empty">暂无数据</div>
+</div>
+</div>
+</div>
+
+<!-- 数据列表页 -->
+<div class="page-section" id="pageList">
+<h2 class="page-title">数据列表</h2>
+<div class="filter-bar">
+<select id="filterSchool"><option value="">全部高校</option></select>
+<input type="date" id="filterStartDate" placeholder="开始日期">
+<input type="date" id="filterEndDate" placeholder="结束日期">
+<button class="btn btn-primary btn-sm" id="searchBtn">🔍 搜索</button>
+<button class="btn btn-secondary btn-sm" id="resetBtn">重置</button>
+</div>
+<div class="table-container">
+<div id="batchBar" style="display:none; padding: 8px 16px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; margin-bottom: 12px;">
+<span id="batchCount" style="font-weight: 600; color: #0369a1;">已选 0 条</span>
+<button class="btn btn-danger btn-sm" onclick="window.batchDelete()" style="margin-left: 12px;">批量删除</button>
+<button class="btn btn-sm" onclick="window.selectPage()" style="margin-left: 8px; background: #e0f2fe;">页面全选</button>
+<button class="btn btn-sm" onclick="window.selectAll()" style="margin-left: 8px; background: #dbeafe;">全选</button>
+<button class="btn btn-sm" onclick="window.clearSelection()" style="margin-left: 8px; background: #f3f4f6;">取消选择</button>
+</div>
+<table class="data-table">
+<thead>
+<tr>
+<th style="width:40px"><input type="checkbox" id="selectAll" onclick="window.toggleSelectAll()"></th>
+<th>序号</th>
+<th>高校名称</th>
+<th>填报人</th>
+<th>统计周期</th>
+<th>提交时间</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+<div class="pagination" id="pagination"></div>
+</div>
+</div>
+
+<!-- 导出报表页 -->
+<div class="page-section" id="pageExport">
+<h2 class="page-title">导出报表</h2>
+<div class="export-card">
+<h3>📥 导出Excel汇总表</h3>
+<p>选择日期范围，导出包含数据统计表和活动情况表两个Sheet的Excel文件。</p>
+<div class="export-form">
+<div class="date-row">
+<div class="form-group">
+<label>开始日期</label>
+<input type="date" id="exportStartDate">
+</div>
+<div class="form-group">
+<label>结束日期</label>
+<input type="date" id="exportEndDate">
+</div>
+</div>
+<button class="btn btn-success" id="exportBtn">
+⬇️ 导出Excel汇总表
+</button>
+</div>
+<div class="export-note">
+<strong>导出说明：</strong><br>
+• Sheet1「数据统计表」：各高校的汇总统计数据<br>
+• Sheet2「活动情况表」：各高校开展的就业服务活动明细<br>
+• 文件格式：.xlsx（Excel 2007+）
+</div>
+</div>
+<!-- 导出原始数据卡片 -->
+<div class="export-card" style="margin-top: 24px;">
+<div style="font-size: 20px; margin-bottom: 8px;">📋</div>
+<h3 style="margin-bottom: 8px; font-size: 16px;">导出原始数据</h3>
+<p style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">导出所有录入的原始记录，每条记录一行，包含全部字段</p>
+<button class="btn" onclick="window.exportRawData()" style="background: #059669; color: #fff;">导出原始数据</button>
+</div>
+<!-- 批量导入卡片 -->
+<div class="import-card">
+<div style="font-size: 20px; margin-bottom: 8px;">📤</div>
+<h3 style="margin-bottom: 8px; font-size: 16px;">批量导入数据</h3>
+<p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">选择Excel文件，批量导入周报数据。支持 .xlsx 和 .xls 格式。</p>
+<div class="import-area" id="importArea">
+<div class="import-icon">📁</div>
+<div class="import-text">点击选择或拖拽Excel文件到此处</div>
+<input type="file" id="importFileInput" accept=".xlsx,.xls">
+<button class="btn btn-primary" onclick="document.getElementById('importFileInput').click()">选择文件</button>
+</div>
+<div id="importResult" style="display:none;"></div>
+<div class="export-note" style="margin-top: 16px;">
+<strong>导入说明：</strong><br>
+• 文件格式：.xlsx 或 .xls（Excel）<br>
+• 第一行应为表头，包含：高校名称、填报人、联系电话等字段<br>
+• 导入前请确保数据格式正确
+</div>
+</div>
+<!-- 本周未提交高校卡片 -->
+<div class="unsubmitted-card">
+<h3>📋 本周未提交高校清单</h3>
+<p class="subtitle">查看本周（周一 ~ 周日）未提交周报的高校名单并导出</p>
+<div class="week-range" id="weekRange">📅 统计周期：--</div>
+<div class="submission-progress">
+提交进度：<span class="progress-num" id="progressNum">- / -</span>
+<span id="progressPercent" style="margin-left: 8px; color: var(--text-muted); font-weight: 400; font-size: 12px;"></span>
+</div>
+<div class="school-list" id="schoolList">
+<div class="empty-tip">加载中...</div>
+</div>
+<button class="btn btn-primary" id="exportUnsubmittedBtn">
+⬇️ 导出未提交高校清单
+</button>
+</div>
+</div>
+
+<!-- 回收站页 -->
+<div class="page-section" id="pageRecycleBin">
+<h2 class="page-title">🗑️ 回收站</h2>
+<div class="table-container">
+<table class="data-table">
+<thead>
+<tr>
+<th>序号</th>
+<th>高校名称</th>
+<th>填报人</th>
+<th>统计周期</th>
+<th>删除时间</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody id="recycleBinBody"></tbody>
+</table>
+<div class="pagination" id="recycleBinPagination"></div>
+</div>
+</div>
+
+<!-- 审计日志页 -->
+<div class="page-section" id="pageAuditLog">
+<h2 class="page-title">📋 审计日志</h2>
+<div class="audit-filter-bar">
+<select id="auditActionFilter">
+<option value="">全部操作</option>
+<option value="CREATE">创建</option>
+<option value="UPDATE">更新</option>
+<option value="DELETE">删除</option>
+<option value="LOGIN">登录</option>
+<option value="EXPORT">导出</option>
+<option value="PASSWORD_CHANGE">密码修改</option>
+<option value="RESTORE">恢复</option>
+</select>
+<button class="btn btn-primary btn-sm" onclick="window.loadAuditLogs()">🔍 筛选</button>
+</div>
+<div class="table-container">
+<table class="data-table">
+<thead>
+<tr>
+<th>时间</th>
+<th>操作类型</th>
+<th>操作用户</th>
+<th>目标ID</th>
+<th>详情</th>
+</tr>
+</thead>
+<tbody id="auditLogBody"></tbody>
+</table>
+<div class="pagination" id="auditLogPagination"></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Toast提示 -->
+<div class="toast" id="toast"></div>
+
+<!-- 加载动画 -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+<div class="spinner"></div>
+</div>
+
+<!-- 密码修改对话框 -->
+<div class="modal-overlay" id="passwordModalOverlay">
+<div class="modal-dialog">
+<h3>🔑 修改密码</h3>
+<div class="modal-error" id="passwordModalError"></div>
+<div class="form-group">
+<label>旧密码</label>
+<input type="password" id="oldPassword" placeholder="请输入旧密码">
+</div>
+<div class="form-group">
+<label>新密码</label>
+<input type="password" id="newPassword" placeholder="请输入新密码（至少6位）">
+</div>
+<div class="form-group">
+<label>确认新密码</label>
+<input type="password" id="confirmPassword" placeholder="请再次输入新密码">
+</div>
+<div class="modal-actions">
+<button class="btn btn-secondary" onclick="window.closePasswordModal()">取消</button>
+<button class="btn btn-primary" onclick="window.submitPasswordChange()">确认修改</button>
+</div>
+</div>
+</div>
+
+<!-- SheetJS CDN -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/xlsx.full.min.js"></script>
+
+<script>
+(function() {
+'use strict';
+
+// ==================== 配置 ====================
+const API_BASE = '';
+const TOKEN_KEY = 'admin_token';
+
+// ==================== DOM元素 ====================
+const $ = id => document.getElementById(id);
+const $$ = sel => document.querySelectorAll(sel);
+
+// ==================== 状态 ====================
+let currentPage = 1;
+let totalPages = 1;
+let expandedRowId = null;
+const pageSize = 10;
+
+// 审计日志分页状态
+let auditLogPage = 1;
+let auditLogTotalPages = 1;
+
+// 回收站分页状态
+let recycleBinPage = 1;
+let recycleBinTotalPages = 1;
+
+// ==================== 工具函数 ====================
+function getToken() { return localStorage.getItem(TOKEN_KEY); }
+function setToken(t) { localStorage.setItem(TOKEN_KEY, t); }
+function removeToken() { localStorage.removeItem(TOKEN_KEY); }
+
+function showLoading() { $('loadingOverlay').classList.remove('hidden'); }
+function hideLoading() { $('loadingOverlay').classList.add('hidden'); }
+
+function showToast(msg, type) {
+const toast = $('toast');
+toast.textContent = msg;
+toast.className = 'toast ' + (type || 'success');
+requestAnimationFrame(() => toast.classList.add('show'));
+setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+async function apiFetch(url, opts) {
+opts = opts || {};
+opts.headers = opts.headers || {};
+const token = getToken();
+if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+if (!(opts.body instanceof FormData) && opts.body && typeof opts.body === 'object') {
+opts.headers['Content-Type'] = 'application/json';
+opts.body = JSON.stringify(opts.body);
+}
+const res = await fetch(API_BASE + url, opts);
+if (res.status === 401) {
+removeToken();
+showLogin();
+throw new Error('登录已过期，请重新登录');
+}
+return res;
+}
+
+function formatDate(dateStr) {
+if (!dateStr) return '-';
+const d = new Date(dateStr);
+if (isNaN(d)) return dateStr;
+return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function formatDateTime(dateStr) {
+return formatDate(dateStr);
+}
+
+function escapeHtml(str) {
+if (str == null) return '';
+return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ==================== 页面切换 ====================
+function showLogin() {
+$('loginPage').classList.remove('hidden');
+$('mainLayout').classList.remove('show');
+}
+
+function showMain() {
+$('loginPage').classList.add('hidden');
+$('mainLayout').classList.add('show');
+loadOverview();
+}
+
+function switchPage(page) {
+$$('.page-section').forEach(el => el.classList.remove('active'));
+$$('.nav-item').forEach(el => el.classList.remove('active'));
+const pageMap = {
+'overview': 'pageOverview',
+'list': 'pageList',
+'export': 'pageExport',
+'recycleBin': 'pageRecycleBin',
+'auditLog': 'pageAuditLog'
+};
+const pageId = pageMap[page];
+if (pageId && $(pageId)) {
+$(pageId).classList.add('active');
+}
+const navEl = document.querySelector('[data-page="' + page + '"]');
+if (navEl) navEl.classList.add('active');
+if (page === 'overview') loadOverview();
+if (page === 'list') loadSubmissions();
+if (page === 'export') initExport();
+if (page === 'recycleBin') loadRecycleBin();
+if (page === 'auditLog') loadAuditLogs();
+}
+
+// ==================== 登录 ====================
+$('loginForm').addEventListener('submit', async function(e) {
+e.preventDefault();
+const username = $('username').value.trim();
+const password = $('password').value.trim();
+const errorEl = $('loginError');
+errorEl.classList.remove('show');
+const btn = $('loginBtn');
+const origText = btn.textContent;
+btn.textContent = '登录中...';
+btn.disabled = true;
+
+try {
+const res = await apiFetch('/api/admin/login', {
+method: 'POST',
+body: { username, password }
+});
+const data = await res.json();
+if (res.ok && data.token) {
+setToken(data.token);
+showMain();
+$('username').value = '';
+$('password').value = '';
+showToast('登录成功');
+} else {
+errorEl.textContent = data.message || '用户名或密码错误';
+errorEl.classList.add('show');
+}
+} catch(err) {
+errorEl.textContent = '登录失败：' + (err.message || '网络错误');
+errorEl.classList.add('show');
+} finally {
+btn.textContent = origText;
+btn.disabled = false;
+}
+});
+
+$('logoutBtn').addEventListener('click', function() {
+removeToken();
+showLogin();
+showToast('已退出登录');
+});
+
+// ==================== 导航 ====================
+$$('.nav-item').forEach(item => {
+item.addEventListener('click', () => switchPage(item.dataset.page));
+});
+
+// 移动端侧边栏
+$('menuToggle').addEventListener('click', () => {
+$('sidebar').classList.toggle('open');
+$('sidebarOverlay').classList.toggle('show');
+});
+$('sidebarOverlay').addEventListener('click', () => {
+$('sidebar').classList.remove('open');
+$('sidebarOverlay').classList.remove('show');
+});
+
+// ==================== 概览页 ====================
+async function loadOverview() {
+showLoading();
+try {
+const res = await apiFetch('/api/admin/stats');
+const result = await res.json();
+const d = result.data || {};
+$('statTotal').textContent = d.totalSubmissions ?? 0;
+$('statThisWeek').textContent = d.thisWeekSubmissions ?? 0;
+$('statSchools').textContent = d.totalSchools ?? 0;
+$('statPending').textContent = (d.totalSchools ?? 0) - (d.submittedSchools ?? 0);
+renderChart(d.weeklyTrend || []);
+} catch(err) {
+showToast('加载概览数据失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+}
+
+function renderChart(trend) {
+const container = $('trendChart');
+if (!trend || trend.length === 0) {
+container.innerHTML = '<div class="chart-empty">暂无数据</div>';
+return;
+}
+const maxVal = Math.max(...trend.map(t => t.count || 0), 1);
+container.innerHTML = '';
+trend.forEach(item => {
+const h = Math.max((item.count / maxVal) * 160, 4);
+const wrapper = document.createElement('div');
+wrapper.className = 'chart-bar-wrapper';
+wrapper.innerHTML =
+'<div class="chart-bar" style="height:' + h + 'px">' +
+'<div class="chart-tooltip">' + (item.count || 0) + ' 条</div>' +
+'</div>' +
+'<div class="chart-label">' + escapeHtml(item.label || '') + '</div>';
+container.appendChild(wrapper);
+});
+}
+
+// ==================== 数据列表页 ====================
+async function loadSchools() {
+try {
+// 方法1：从已提交记录中提取
+const res = await apiFetch('/api/admin/submissions?page=1&pageSize=1000');
+const result = await res.json();
+const submitted = [...new Set((result.data || []).map(s => s.school_name).filter(Boolean))];
+
+// 方法2：获取全部学校列表（用于筛选）
+const res2 = await apiFetch('/api/admin/schools');
+const result2 = await res2.json();
+const allSchools = result2.data || [];
+
+const select = $('filterSchool');
+select.innerHTML = '<option value="">全部高校</option>';
+allSchools.forEach(s => {
+const opt = document.createElement('option');
+opt.value = s;
+opt.textContent = s;
+select.appendChild(opt);
+});
+} catch(e) {
+console.error('loadSchools error:', e);
+}
+}
+
+async function loadSubmissions() {
+const school = $('filterSchool').value;
+const startDate = $('filterStartDate').value;
+const endDate = $('filterEndDate').value;
+let url = '/api/admin/submissions?page=' + currentPage + '&pageSize=' + pageSize;
+if (school) url += '&school=' + encodeURIComponent(school);
+if (startDate) url += '&startDate=' + startDate;
+if (endDate) url += '&endDate=' + endDate;
+try {
+showLoading();
+const res = await apiFetch(url);
+const result = await res.json();
+renderTable(result.data || [], result.pagination?.total || 0);
+renderPagination(result.pagination?.total || 0);
+} catch(err) {
+showToast('加载数据失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+}
+
+function renderTable(list, total) {
+const tbody = $('tableBody');
+tbody.innerHTML = '';
+if (list.length === 0) {
+tbody.innerHTML = '<tr><td colspan="7" class="empty-state">暂无数据</td></tr>';
+return;
+}
+// 表头（含全选）
+const headerRow = document.createElement('tr');
+headerRow.innerHTML =
+'<th style="width:40px"><input type="checkbox" id="selectAll" onclick="window.toggleSelectAll()"></th>' +
+'<th>序号</th>' +
+'<th>高校</th>' +
+'<th>填报人</th>' +
+'<th>周期</th>' +
+'<th>提交时间</th>' +
+'<th>操作</th>';
+tbody.appendChild(headerRow);
+list.forEach((item, idx) => {
+const seq = (currentPage - 1) * pageSize + idx + 1;
+const tr = document.createElement('tr');
+tr.setAttribute('data-id', item.id);
+tr.innerHTML =
+'<td><input type="checkbox" class="row-check" value="' + item.id + '" onchange="window.updateSelectAll()"></td>' +
+'<td>' + seq + '</td>' +
+'<td>' + escapeHtml(item.school_name || '-') + '</td>' +
+'<td>' + escapeHtml(item.reporter_name || '-') + '</td>' +
+'<td>' + escapeHtml((item.period_start || '') + ' ~ ' + (item.period_end || '')) + '</td>' +
+'<td>' + formatDate(item.submitted_at) + '</td>' +
+'<td class="table-actions">' +
+'<button class="btn btn-primary btn-sm" onclick="window.viewDetail(' + item.id + ')">查看</button>' +
+'<button class="btn btn-danger btn-sm" onclick="window.deleteItem(' + item.id + ')">删除</button>' +
+'</td>';
+tbody.appendChild(tr);
+});
+}
+
+function renderPagination(total) {
+totalPages = Math.max(Math.ceil(total / pageSize), 1);
+const el = $('pagination');
+let html = '<div class="pagination-info">共 ' + total + ' 条，第 ' + currentPage + '/' + totalPages + ' 页</div>';
+html += '<div class="pagination-btns">';
+html += '<button ' + (currentPage <= 1 ? 'disabled' : '') + ' onclick="window.goPage(' + (currentPage - 1) + ')">上一页</button>';
+const start = Math.max(1, currentPage - 2);
+const end = Math.min(totalPages, currentPage + 2);
+for (let i = start; i <= end; i++) {
+html += '<button class="' + (i === currentPage ? 'active' : '') + '" onclick="window.goPage(' + i + ')">' + i + '</button>';
+}
+html += '<button ' + (currentPage >= totalPages ? 'disabled' : '') + ' onclick="window.goPage(' + (currentPage + 1) + ')">下一页</button>';
+html += '</div>';
+el.innerHTML = html;
+}
+
+window.goPage = function(p) {
+if (p < 1 || p > totalPages) return;
+currentPage = p;
+expandedRowId = null;
+loadSubmissions();
+};
+
+window.viewDetail = async function(id) {
+const existing = document.querySelector('.detail-row');
+if (existing) existing.remove();
+if (expandedRowId === id) {
+expandedRowId = null;
+document.querySelectorAll('tr.expanded').forEach(tr => tr.classList.remove('expanded'));
+return;
+}
+expandedRowId = id;
+document.querySelectorAll('tr.expanded').forEach(tr => tr.classList.remove('expanded'));
+const tr = document.querySelector('tr[data-id="' + id + '"]');
+if (tr) tr.classList.add('expanded');
+
+showLoading();
+try {
+const res = await apiFetch('/api/admin/submissions/' + id);
+const data = await res.json();
+renderDetailRow(tr, data);
+} catch(err) {
+showToast('加载详情失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+};
+
+function renderDetailRow(tr, data) {
+const detailTr = document.createElement('tr');
+detailTr.className = 'detail-row';
+detailTr.innerHTML = '<td colspan="7"><div class="detail-content">' + buildDetailHTML(data) + '</div></td>';
+tr.parentNode.insertBefore(detailTr, tr.nextSibling);
+}
+
+function buildDetailHTML(d) {
+let html = '<div class="detail-grid">';
+
+// 基础信息
+html += '<div class="detail-subtitle">基础信息</div>';
+const basicFields = [
+['高校名称', d.school_name], ['填报人', d.reporter_name],
+['职务', d.reporter_position], ['联系电话', d.phone],
+['邮箱', d.email], ['统计周期', (d.period_start || '') + ' ~ ' + (d.period_end || '')],
+['数据截止', d.deadline], ['提交时间', formatDate(d.submitted_at)]
+];
+basicFields.forEach(([label, value]) => {
+html += '<div class="detail-item"><label>' + label + '</label><span>' + escapeHtml(value || '-') + '</span></div>';
+});
+
+// 就业引航
+if (d.q8_weekly_lectures || d.q9_weekly_reach || d.q12_has_lecture) {
+html += '<div class="detail-subtitle">就业引航计划</div>';
+html += '<div class="detail-item"><label>本周宣讲</label><span>' + (d.q8_weekly_lectures || 0) + '场，覆盖' + (d.q9_weekly_reach || 0) + '人次</span></div>';
+html += '<div class="detail-item"><label>是否已开展引航宣讲</label><span>' + (d.q12_has_lecture || '-') + '</span></div>';
+html += '<div class="detail-item"><label>主题团日</label><span>本周' + (d.q13_weekly_tuanri || 0) + '场</span></div>';
+if (d.q15_provincial_desc) html += '<div class="detail-item"><label>省级宣讲</label><span>' + escapeHtml(d.q15_provincial_desc) + '</span></div>';
+}
+
+// 千校万岗
+if (d.q16_weekly_recruit || d.q17_weekly_companies) {
+html += '<div class="detail-subtitle">千校万岗</div>';
+html += '<div class="detail-item"><label>招聘活动</label><span>' + (d.q16_weekly_recruit || 0) + '场</span></div>';
+html += '<div class="detail-item"><label>参与企业</label><span>' + (d.q17_weekly_companies || 0) + '家</span></div>';
+html += '<div class="detail-item"><label>提供岗位</label><span>' + (d.q18_weekly_jobs || 0) + '个</span></div>';
+}
+
+// 扬帆计划
+if (d.q22_gov_units || d.q28_ent_units || d.q34_exp_sessions) {
+html += '<div class="detail-subtitle">扬帆计划</div>';
+html += '<div class="detail-item"><label>政务实习</label><span>' + (d.q22_gov_units || 0) + '家单位/' + (d.q23_gov_jobs || 0) + '岗位/' + (d.q24_gov_students || 0) + '人</span></div>';
+html += '<div class="detail-item"><label>企业实习</label><span>' + (d.q28_ent_units || 0) + '家单位/' + (d.q29_ent_jobs || 0) + '岗位/' + (d.q30_ent_students || 0) + '人</span></div>';
+html += '<div class="detail-item"><label>职场体验</label><span>' + (d.q34_exp_sessions || 0) + '场/' + (d.q35_exp_reach || 0) + '人次</span></div>';
+}
+
+// 创业带动就业
+if (d.q38_new_shops || d.q41_national_landings || d.q43_provincial_landings) {
+html += '<div class="detail-subtitle">创业带动就业</div>';
+html += '<div class="detail-item"><label>青春小店</label><span>本周新增' + (d.q38_new_shops || 0) + '个</span></div>';
+if (d.q41_national_landings) html += '<div class="detail-item"><label>国赛孵化</label><span>' + (d.q41_national_landings || 0) + '个落地/' + (d.q41_national_funds || 0) + '万元</span></div>';
+if (d.q43_provincial_landings) html += '<div class="detail-item"><label>省赛孵化</label><span>' + (d.q43_provincial_landings || 0) + '个落地/' + (d.q43_provincial_funds || 0) + '万元</span></div>';
+}
+
+// 调研工作
+if (d.research_items && d.research_items.length > 0) {
+html += '<div class="detail-subtitle">调研工作（' + d.research_items.length + '项）</div>';
+d.research_items.forEach((item, i) => {
+html += '<div class="detail-item"><label>调研' + (i+1) + '</label><span>' + escapeHtml(item.item_name || '-') + ' | ' + escapeHtml(item.item_org || '-') + ' | ' + escapeHtml(item.item_result || '-') + '</span></div>';
+});
+}
+
+// 宣传报道
+if (d.publicity_items && d.publicity_items.length > 0) {
+html += '<div class="detail-subtitle">宣传报道（' + d.publicity_items.length + '条）</div>';
+d.publicity_items.forEach((item, i) => {
+html += '<div class="detail-item"><label>报道' + (i+1) + '</label><span>' + escapeHtml(item.activity_name || '-') + ' | ' + escapeHtml(item.media_name || '-') + '</span></div>';
+});
+}
+
+// 拟开展活动
+if (d.planned_activities && d.planned_activities.length > 0) {
+html += '<div class="detail-subtitle">拟开展活动（' + d.planned_activities.length + '项）</div>';
+d.planned_activities.forEach((item, i) => {
+html += '<div class="detail-item"><label>活动' + (i+1) + '</label><span>' + escapeHtml(item.name || '-') + ' | ' + escapeHtml(item.activity_date || '-') + ' | ' + escapeHtml(item.location || '-') + '</span></div>';
+});
+}
+
+// 已开展活动
+if (d.completed_activities && d.completed_activities.length > 0) {
+html += '<div class="detail-subtitle">已开展活动报道（' + d.completed_activities.length + '条）</div>';
+d.completed_activities.forEach((item, i) => {
+html += '<div class="detail-item"><label>报道' + (i+1) + '</label><span>' + escapeHtml(item.news_title || '-') + ' | ' + escapeHtml(item.platform || '-') + '</span></div>';
+});
+}
+
+html += '</div>';
+return html;
+}
+
+window.deleteItem = async function(id) {
+if (!confirm('确定要删除这条记录吗？此操作不可恢复。')) return;
+showLoading();
+try {
+const res = await apiFetch('/api/admin/submissions/' + id, { method: 'DELETE' });
+if (res.ok) {
+showToast('删除成功');
+if (expandedRowId === id) expandedRowId = null;
+loadSubmissions();
+} else {
+const data = await res.json();
+showToast(data.message || '删除失败', 'error');
+}
+} catch(err) {
+showToast('删除失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+};
+
+window.toggleSelectAll = function() {
+const allChecked = $('selectAll').checked;
+document.querySelectorAll('.row-check').forEach(cb => cb.checked = allChecked);
+updateBatchBar();
+};
+
+window.updateSelectAll = function() {
+const all = document.querySelectorAll('.row-check');
+const checked = document.querySelectorAll('.row-check:checked');
+$('selectAll').checked = all.length > 0 && all.length === checked.length;
+updateBatchBar();
+};
+
+function updateBatchBar() {
+const checked = document.querySelectorAll('.row-check:checked');
+const bar = $('batchBar');
+if (checked.length > 0) {
+bar.style.display = 'block';
+$('batchCount').textContent = '已选 ' + checked.length + ' 条';
+} else {
+bar.style.display = 'none';
+}
+}
+
+window.clearSelection = function() {
+document.querySelectorAll('.row-check').forEach(cb => cb.checked = false);
+$('selectAll').checked = false;
+window._selectAllMode = false;
+window._allSelectedIds = null;
+updateBatchBar();
+};
+
+window.selectPage = function() {
+document.querySelectorAll('.row-check').forEach(cb => cb.checked = true);
+$('selectAll').checked = true;
+window._selectAllMode = false;
+window._allSelectedIds = null;
+updateBatchBar();
+};
+
+window.selectAll = async function() {
+// 选中所有记录（跨页）
+const res = await apiFetch('/api/admin/submissions?page=1&pageSize=10000');
+const result = await res.json();
+const allIds = (result.data || []).map(item => item.id);
+// 存储到全局变量
+window._allSelectedIds = allIds;
+window._selectAllMode = true;
+document.querySelectorAll('.row-check').forEach(cb => cb.checked = true);
+$('selectAll').checked = true;
+const bar = $('batchBar');
+bar.style.display = 'block';
+$('batchCount').textContent = '已选 ' + allIds.length + ' 条（全部）';
+};
+
+window.batchDelete = async function() {
+let ids = [];
+if (window._selectAllMode && window._allSelectedIds) {
+ids = window._allSelectedIds;
+} else {
+ids = Array.from(document.querySelectorAll('.row-check:checked')).map(cb => parseInt(cb.value));
+}
+if (ids.length === 0) return;
+if (!confirm('确定删除选中的 ' + ids.length + ' 条记录吗？此操作不可恢复。')) return;
+
+showLoading();
+try {
+let success = 0, failed = 0;
+for (const id of ids) {
+try {
+const res = await apiFetch('/api/admin/submissions/' + id, { method: 'DELETE' });
+if (res.ok) success++;
+else failed++;
+} catch(e) { failed++; }
+}
+showToast('删除完成：成功 ' + success + ' 条' + (failed > 0 ? '，失败 ' + failed + ' 条' : ''));
+expandedRowId = null;
+clearSelection();
+loadSubmissions();
+} catch(err) {
+showToast('批量删除失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+};
+
+$('searchBtn').addEventListener('click', () => { currentPage = 1; expandedRowId = null; loadSubmissions(); });
+$('resetBtn').addEventListener('click', () => {
+$('filterSchool').value = '';
+$('filterStartDate').value = '';
+$('filterEndDate').value = '';
+currentPage = 1;
+expandedRowId = null;
+loadSubmissions();
+});
+
+// ==================== 导出页 ====================
+function getWeekRange() {
+const now = new Date();
+const day = now.getDay();
+const diffToMonday = day === 0 ? -6 : 1 - day;
+const monday = new Date(now);
+monday.setDate(now.getDate() + diffToMonday);
+monday.setHours(0, 0, 0, 0);
+const sunday = new Date(monday);
+sunday.setDate(monday.getDate() + 6);
+sunday.setHours(23, 59, 59, 999);
+return {
+monday: monday.toISOString().split('T')[0],
+sunday: sunday.toISOString().split('T')[0]
+};
+}
+
+function renderUnsubmittedSchools(stats) {
+const weekRangeEl = $('weekRange');
+const progressNumEl = $('progressNum');
+const progressPercentEl = $('progressPercent');
+const schoolListEl = $('schoolList');
+
+const submitted = stats.submittedSchools ?? 0;
+const total = stats.totalSchools ?? 0;
+const unsubmitted = stats.unsubmittedSchools || [];
+const percent = total > 0 ? Math.round((submitted / total) * 100) : 0;
+
+weekRangeEl.textContent = '📅 统计周期：' + (stats.weekStart || '--') + ' ~ ' + (stats.weekEnd || '--');
+progressNumEl.textContent = submitted + ' / ' + total;
+progressPercentEl.textContent = '（' + percent + '%）';
+
+if (total === 0) {
+schoolListEl.innerHTML = '<div class="empty-tip">暂无高校数据</div>';
+return;
+}
+
+if (unsubmitted.length === 0) {
+schoolListEl.innerHTML = '<div class="success-tip">🎉 本周所有高校均已提交！</div>';
+return;
+}
+
+let html = '';
+unsubmitted.forEach((school, index) => {
+html += '<div class="school-item">' +
+'<span class="school-index">' + (index + 1) + '.</span>' +
+'<span class="school-name">' + escapeHtml(school) + '</span>' +
+'</div>';
+});
+schoolListEl.innerHTML = html;
+}
+
+async function loadUnsubmittedSchools() {
+try {
+const res = await apiFetch('/api/admin/stats');
+const result = await res.json();
+if (result.success && result.data) {
+renderUnsubmittedSchools(result.data);
+} else {
+$('schoolList').innerHTML = '<div class="empty-tip">加载失败：' + (result.message || '未知错误') + '</div>';
+}
+} catch (err) {
+$('schoolList').innerHTML = '<div class="empty-tip">加载失败：' + err.message + '</div>';
+}
+}
+
+function initExport() {
+// 默认设置为当月1号到今天
+const now = new Date();
+const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+$('exportEndDate').value = now.toISOString().split('T')[0];
+$('exportStartDate').value = firstDay.toISOString().split('T')[0];
+// 加载本周未提交高校数据
+loadUnsubmittedSchools();
+}
+
+$('exportBtn').addEventListener('click', async function() {
+const startDate = $('exportStartDate').value;
+const endDate = $('exportEndDate').value;
+if (!startDate || !endDate) {
+showToast('请选择开始日期和结束日期', 'error');
+return;
+}
+if (startDate > endDate) {
+showToast('开始日期不能晚于结束日期', 'error');
+return;
+}
+
+const btn = $('exportBtn');
+const origText = btn.textContent;
+btn.textContent = '导出中...';
+btn.disabled = true;
+
+try {
+const res = await apiFetch('/api/admin/export?startDate=' + startDate + '&endDate=' + endDate);
+if (!res.ok) {
+const data = await res.json();
+throw new Error(data.message || '导出失败');
+}
+const blob = await res.blob();
+const url = window.URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = '就业周报汇总表_' + startDate + '_' + endDate + '.xlsx';
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+window.URL.revokeObjectURL(url);
+showToast('导出成功');
+} catch(err) {
+showToast('导出失败: ' + err.message, 'error');
+} finally {
+btn.textContent = origText;
+btn.disabled = false;
+}
+});
+
+window.exportRawData = async function() {
+try {
+const token = localStorage.getItem('adminToken');
+const res = await fetch('/api/admin/export/raw', {
+headers: { 'Authorization': 'Bearer ' + token }
+});
+if (!res.ok) throw new Error('导出失败');
+const blob = await res.blob();
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = '原始数据_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+a.click();
+URL.revokeObjectURL(url);
+showToast('原始数据导出成功');
+} catch (err) {
+showToast('导出失败: ' + err.message, 'error');
+}
+};
+
+$('exportUnsubmittedBtn').addEventListener('click', async function() {
+const weekRange = getWeekRange();
+const btn = $('exportUnsubmittedBtn');
+const origText = btn.textContent;
+btn.textContent = '导出中...';
+btn.disabled = true;
+
+try {
+const res = await apiFetch('/api/admin/export/unsubmitted?weekStart=' + weekRange.monday + '&weekEnd=' + weekRange.sunday);
+if (!res.ok) {
+const data = await res.json();
+throw new Error(data.message || '导出失败');
+}
+const blob = await res.blob();
+const url = window.URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = '未提交高校清单_' + weekRange.monday + '_' + weekRange.sunday + '.xlsx';
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+window.URL.revokeObjectURL(url);
+showToast('导出成功');
+} catch(err) {
+showToast('导出失败: ' + err.message, 'error');
+} finally {
+btn.textContent = origText;
+btn.disabled = false;
+}
+});
+
+// ==================== 密码修改 ====================
+$('passwordBtn').addEventListener('click', function() {
+$('passwordModalOverlay').classList.add('show');
+$('passwordModalError').classList.remove('show');
+$('oldPassword').value = '';
+$('newPassword').value = '';
+$('confirmPassword').value = '';
+});
+
+window.closePasswordModal = function() {
+$('passwordModalOverlay').classList.remove('show');
+};
+
+window.submitPasswordChange = async function() {
+const oldPassword = $('oldPassword').value.trim();
+const newPassword = $('newPassword').value.trim();
+const confirmPassword = $('confirmPassword').value.trim();
+const errorEl = $('passwordModalError');
+
+if (!oldPassword || !newPassword || !confirmPassword) {
+errorEl.textContent = '请填写所有密码字段';
+errorEl.classList.add('show');
+return;
+}
+if (newPassword.length < 6) {
+errorEl.textContent = '新密码至少6位';
+errorEl.classList.add('show');
+return;
+}
+if (newPassword !== confirmPassword) {
+errorEl.textContent = '两次输入的新密码不一致';
+errorEl.classList.add('show');
+return;
+}
+
+errorEl.classList.remove('show');
+showLoading();
+try {
+const res = await apiFetch('/api/admin/password', {
+method: 'POST',
+body: { oldPassword, newPassword }
+});
+const data = await res.json();
+if (res.ok) {
+closePasswordModal();
+showToast('密码修改成功，请重新登录');
+setTimeout(function() {
+removeToken();
+showLogin();
+}, 1500);
+} else {
+errorEl.textContent = data.message || '密码修改失败';
+errorEl.classList.add('show');
+}
+} catch(err) {
+errorEl.textContent = '密码修改失败：' + (err.message || '网络错误');
+errorEl.classList.add('show');
+} finally {
+hideLoading();
+}
+};
+
+// 点击遮罩关闭密码修改对话框
+$('passwordModalOverlay').addEventListener('click', function(e) {
+if (e.target === $('passwordModalOverlay')) {
+closePasswordModal();
+}
+});
+
+// ==================== 回收站 ====================
+async function loadRecycleBin() {
+let url = '/api/admin/submissions/deleted?page=' + recycleBinPage + '&pageSize=' + pageSize;
+try {
+showLoading();
+const res = await apiFetch(url);
+const result = await res.json();
+renderRecycleBinTable(result.data || [], result.pagination?.total || 0);
+renderRecycleBinPagination(result.pagination?.total || 0);
+} catch(err) {
+showToast('加载回收站数据失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+}
+
+function renderRecycleBinTable(list, total) {
+const tbody = $('recycleBinBody');
+tbody.innerHTML = '';
+if (list.length === 0) {
+tbody.innerHTML = '<tr><td colspan="6" class="empty-state">♻️ 回收站为空</td></tr>';
+return;
+}
+list.forEach((item, idx) => {
+const seq = (recycleBinPage - 1) * pageSize + idx + 1;
+const tr = document.createElement('tr');
+tr.setAttribute('data-id', item.id);
+tr.innerHTML =
+'<td>' + seq + '</td>' +
+'<td>' + escapeHtml(item.school_name || '-') + '</td>' +
+'<td>' + escapeHtml(item.reporter_name || '-') + '</td>' +
+'<td>' + escapeHtml((item.period_start || '') + ' ~ ' + (item.period_end || '')) + '</td>' +
+'<td>' + formatDate(item.deleted_at) + '</td>' +
+'<td class="table-actions">' +
+'<button class="btn btn-success btn-sm" onclick="window.restoreItem(' + item.id + ')">恢复</button>' +
+'<button class="btn btn-danger btn-sm" onclick="window.permanentDelete(' + item.id + ')">永久删除</button>' +
+'</td>';
+tbody.appendChild(tr);
+});
+}
+
+function renderRecycleBinPagination(total) {
+recycleBinTotalPages = Math.max(Math.ceil(total / pageSize), 1);
+const el = $('recycleBinPagination');
+let html = '<div class="pagination-info">共 ' + total + ' 条，第 ' + recycleBinPage + '/' + recycleBinTotalPages + ' 页</div>';
+html += '<div class="pagination-btns">';
+html += '<button ' + (recycleBinPage <= 1 ? 'disabled' : '') + ' onclick="window.goRecycleBinPage(' + (recycleBinPage - 1) + ')">上一页</button>';
+const start = Math.max(1, recycleBinPage - 2);
+const end = Math.min(recycleBinTotalPages, recycleBinPage + 2);
+for (let i = start; i <= end; i++) {
+html += '<button class="' + (i === recycleBinPage ? 'active' : '') + '" onclick="window.goRecycleBinPage(' + i + ')">' + i + '</button>';
+}
+html += '<button ' + (recycleBinPage >= recycleBinTotalPages ? 'disabled' : '') + ' onclick="window.goRecycleBinPage(' + (recycleBinPage + 1) + ')">下一页</button>';
+html += '</div>';
+el.innerHTML = html;
+}
+
+window.goRecycleBinPage = function(p) {
+if (p < 1 || p > recycleBinTotalPages) return;
+recycleBinPage = p;
+loadRecycleBin();
+};
+
+window.restoreItem = async function(id) {
+showLoading();
+try {
+const res = await apiFetch('/api/admin/submissions/' + id + '/restore', { method: 'POST' });
+if (res.ok) {
+showToast('恢复成功');
+loadRecycleBin();
+} else {
+const data = await res.json();
+showToast(data.message || '恢复失败', 'error');
+}
+} catch(err) {
+showToast('恢复失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+};
+
+window.permanentDelete = async function(id) {
+if (!confirm('⚠️ 确定要永久删除这条记录吗？此操作不可恢复！')) return;
+showLoading();
+try {
+const res = await apiFetch('/api/admin/submissions/' + id + '/permanent', { method: 'DELETE' });
+if (res.ok) {
+showToast('永久删除成功');
+loadRecycleBin();
+} else {
+const data = await res.json();
+showToast(data.message || '删除失败', 'error');
+}
+} catch(err) {
+showToast('删除失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+};
+
+// ==================== 审计日志 ====================
+function getAuditActionBadgeClass(action) {
+switch (action) {
+case 'CREATE': return 'badge-create';
+case 'UPDATE': return 'badge-update';
+case 'DELETE': return 'badge-delete';
+case 'LOGIN': return 'badge-login';
+case 'EXPORT': return 'badge-export';
+case 'PASSWORD_CHANGE': return 'badge-password';
+case 'RESTORE': return 'badge-update';
+default: return 'badge-login';
+}
+}
+
+function getAuditActionLabel(action) {
+switch (action) {
+case 'CREATE': return '创建';
+case 'UPDATE': return '更新';
+case 'DELETE': return '删除';
+case 'LOGIN': return '登录';
+case 'EXPORT': return '导出';
+case 'PASSWORD_CHANGE': return '密码修改';
+case 'RESTORE': return '恢复';
+default: return action || '未知';
+}
+}
+
+window.loadAuditLogs = async function() {
+const action = $('auditActionFilter').value;
+let url = '/api/admin/audit-logs?page=' + auditLogPage + '&pageSize=' + pageSize;
+if (action) url += '&action=' + encodeURIComponent(action);
+try {
+showLoading();
+const res = await apiFetch(url);
+const result = await res.json();
+renderAuditLogTable(result.data || [], result.pagination?.total || 0);
+renderAuditLogPagination(result.pagination?.total || 0);
+} catch(err) {
+showToast('加载审计日志失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+};
+
+function renderAuditLogTable(list, total) {
+const tbody = $('auditLogBody');
+tbody.innerHTML = '';
+if (list.length === 0) {
+tbody.innerHTML = '<tr><td colspan="5" class="empty-state">📋 暂无审计日志</td></tr>';
+return;
+}
+list.forEach(item => {
+const tr = document.createElement('tr');
+const badgeClass = getAuditActionBadgeClass(item.action);
+const badgeLabel = getAuditActionLabel(item.action);
+tr.innerHTML =
+'<td>' + formatDateTime(item.created_at) + '</td>' +
+'<td><span class="badge ' + badgeClass + '">' + badgeLabel + '</span></td>' +
+'<td>' + escapeHtml(item.username || '-') + '</td>' +
+'<td>' + (item.target_id || '-') + '</td>' +
+'<td>' + escapeHtml(item.details || '-') + '</td>';
+tbody.appendChild(tr);
+});
+}
+
+function renderAuditLogPagination(total) {
+auditLogTotalPages = Math.max(Math.ceil(total / pageSize), 1);
+const el = $('auditLogPagination');
+let html = '<div class="pagination-info">共 ' + total + ' 条，第 ' + auditLogPage + '/' + auditLogTotalPages + ' 页</div>';
+html += '<div class="pagination-btns">';
+html += '<button ' + (auditLogPage <= 1 ? 'disabled' : '') + ' onclick="window.goAuditLogPage(' + (auditLogPage - 1) + ')">上一页</button>';
+const start = Math.max(1, auditLogPage - 2);
+const end = Math.min(auditLogTotalPages, auditLogPage + 2);
+for (let i = start; i <= end; i++) {
+html += '<button class="' + (i === auditLogPage ? 'active' : '') + '" onclick="window.goAuditLogPage(' + i + ')">' + i + '</button>';
+}
+html += '<button ' + (auditLogPage >= auditLogTotalPages ? 'disabled' : '') + ' onclick="window.goAuditLogPage(' + (auditLogPage + 1) + ')">下一页</button>';
+html += '</div>';
+el.innerHTML = html;
+}
+
+window.goAuditLogPage = function(p) {
+if (p < 1 || p > auditLogTotalPages) return;
+auditLogPage = p;
+loadAuditLogs();
+};
+
+// ==================== 批量导入 ====================
+const importFileInput = $('importFileInput');
+const importArea = $('importArea');
+
+importFileInput.addEventListener('change', async function(e) {
+const file = e.target.files[0];
+if (!file) return;
+
+// 检查文件类型
+const validTypes = ['.xlsx', '.xls'];
+const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+if (!validTypes.includes(ext)) {
+showToast('请选择 .xlsx 或 .xls 格式的文件', 'error');
+importFileInput.value = '';
+return;
+}
+
+if (!confirm('确认导入文件「' + file.name + '」吗？\n导入前请确保数据格式正确。')) {
+importFileInput.value = '';
+return;
+}
+
+showLoading();
+try {
+// 使用SheetJS解析Excel
+const data = await file.arrayBuffer();
+const workbook = XLSX.read(data, { type: 'array' });
+const sheetName = workbook.SheetNames[0];
+const worksheet = workbook.Sheets[sheetName];
+const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+if (jsonData.length === 0) {
+showToast('Excel文件为空，没有数据可导入', 'error');
+importFileInput.value = '';
+hideLoading();
+return;
+}
+
+// 转换为后端期望的格式
+const records = jsonData.map(row => {
+return {
+school_name: row['高校名称'] || row['学校名称'] || row['school_name'] || '',
+reporter_name: row['填报人'] || row['填表人'] || row['reporter_name'] || '',
+reporter_position: row['职务'] || row['reporter_position'] || '',
+phone: row['联系电话'] || row['电话'] || row['phone'] || '',
+email: row['邮箱'] || row['电子邮箱'] || row['email'] || '',
+period_start: row['统计周期开始'] || row['开始日期'] || row['period_start'] || '',
+period_end: row['统计周期结束'] || row['结束日期'] || row['period_end'] || '',
+// 其他字段根据Excel表头映射
+data: row
+};
+}).filter(r => r.school_name);
+
+if (records.length === 0) {
+showToast('未找到有效的记录，请检查表头格式', 'error');
+importFileInput.value = '';
+hideLoading();
+return;
+}
+
+// 调用后端导入接口
+const res = await apiFetch('/api/admin/import', {
+method: 'POST',
+body: { records: jsonData }
+});
+const result = await res.json();
+
+const resultEl = $('importResult');
+if (res.ok && result.data) {
+const importData = result.data;
+const successCount = importData.success || 0;
+const failCount = importData.failed || 0;
+const failures = importData.failures || [];
+
+let html = '<div class="import-result ' + (failCount === 0 ? 'success' : 'error') + '">';
+html += '<div class="result-title">导入结果：成功 ' + successCount + ' 条';
+if (failCount > 0) {
+html += '，失败 ' + failCount + ' 条';
+}
+html += '</div>';
+if (failures.length > 0) {
+html += '<div class="fail-list">';
+failures.forEach(f => {
+html += '<div class="fail-item">第' + (f.row || '-') + '行：' + escapeHtml(f.reason || '未知错误') + '</div>';
+});
+html += '</div>';
+}
+html += '</div>';
+resultEl.innerHTML = html;
+resultEl.style.display = 'block';
+
+if (failCount === 0) {
+showToast('导入成功：共 ' + successCount + ' 条记录');
+} else {
+showToast('导入完成：成功 ' + successCount + ' 条，失败 ' + failCount + ' 条', 'error');
+}
+} else {
+const msg = result.message || '导入失败';
+resultEl.innerHTML = '<div class="import-result error"><div class="result-title">导入失败：' + escapeHtml(msg) + '</div></div>';
+resultEl.style.display = 'block';
+showToast(msg, 'error');
+}
+importFileInput.value = '';
+} catch(err) {
+showToast('导入失败: ' + err.message, 'error');
+importFileInput.value = '';
+} finally {
+hideLoading();
+}
+});
+
+// 拖拽导入
+importArea.addEventListener('dragover', function(e) {
+e.preventDefault();
+importArea.style.borderColor = 'var(--primary)';
+});
+importArea.addEventListener('dragleave', function(e) {
+e.preventDefault();
+importArea.style.borderColor = 'var(--border)';
+});
+importArea.addEventListener('drop', function(e) {
+e.preventDefault();
+importArea.style.borderColor = 'var(--border)';
+const files = e.dataTransfer.files;
+if (files.length > 0) {
+importFileInput.files = files;
+// 手动触发change逻辑
+const event = new Event('change');
+importFileInput.dispatchEvent(event);
+}
+});
+
+// ==================== 初始化 ====================
+function init() {
+if (getToken()) {
+showMain();
+} else {
+showLogin();
+}
+// 预加载高校列表
+if (getToken()) loadSchools();
+}
+
+init();
+})();
+</script>
+</body>
+</html>

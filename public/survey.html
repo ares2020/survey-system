@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>共青团服务和促进就业情况排摸</title>
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+ <style>
+ *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+ :root {
+ --primary: #2563eb;
+ --primary-dark: #1d4ed8;
+ --primary-light: #dbeafe;
+ --success: #16a34a;
+ --error: #dc2626;
+ --warning: #ca8a04;
+ --gray-50: #f9fafb;
+ --gray-100: #f3f4f6;
+ --gray-200: #e5e7eb;
+ --gray-300: #d1d5db;
+ --gray-400: #9ca3af;
+ --gray-500: #6b7280;
+ --gray-600: #4b5563;
+ --gray-700: #374151;
+ --gray-800: #1f2937;
+ --gray-900: #111827;
+ --radius: 8px;
+ --radius-sm: 6px;
+ --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+ --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+ --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+ }
+ body {
+ font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+ background: var(--gray-100);
+ color: var(--gray-800);
+ line-height: 1.6;
+ min-height: 100vh;
+ padding: 20px 16px 60px;
+ }
+ .container {
+ max-width: 800px;
+ margin: 0 auto;
+ }
+ /* Header */
+ .survey-header {
+ text-align: center;
+ margin-bottom: 24px;
+ padding: 24px 16px;
+ background: white;
+ border-radius: var(--radius);
+ box-shadow: var(--shadow);
+ }
+ .survey-header h1 {
+ font-size: 22px;
+ font-weight: 700;
+ color: var(--gray-900);
+ margin-bottom: 8px;
+ }
+ .survey-header p {
+ font-size: 14px;
+ color: var(--gray-500);
+ }
+ /* Progress Bar */
+ .progress-bar {
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ gap: 8px;
+ margin-bottom: 24px;
+ padding: 16px;
+ background: white;
+ border-radius: var(--radius);
+ box-shadow: var(--shadow);
+ }
+ .progress-step {
+ display: flex;
+ align-items: center;
+ gap: 8px;
+ }
+ .step-circle {
+ width: 32px;
+ height: 32px;
+ border-radius: 50%;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ font-size: 13px;
+ font-weight: 600;
+ transition: all 0.3s ease;
+ }
+ .step-circle.pending {
+ background: var(--gray-200);
+ color: var(--gray-400);
+ }
+ .step-circle.active {
+ background: var(--primary);
+ color: white;
+ box-shadow: 0 0 0 4px var(--primary-light);
+ }
+ .step-circle.completed {
+ background: var(--success);
+ color: white;
+ }
+ .step-label {
+ font-size: 13px;
+ color: var(--gray-500);
+ font-weight: 500;
+ }
+ .progress-step.active .step-label {
+ color: var(--primary);
+ font-weight: 600;
+ }
+ .step-line {
+ width: 40px;
+ height: 2px;
+ background: var(--gray-200);
+ border-radius: 1px;
+ }
+ .step-line.completed {
+ background: var(--success);
+ }
+ /* Page */
+ .page {
+ display: none;
+ animation: fadeIn 0.3s ease;
+ }
+ .page.active {
+ display: block;
+ }
+ @keyframes fadeIn {
+ from { opacity: 0; transform: translateY(8px); }
+ to { opacity: 1; transform: translateY(0); }
+ }
+ /* Card */
+ .card {
+ background: white;
+ border-radius: var(--radius);
+ box-shadow: var(--shadow);
+ margin-bottom: 20px;
+ overflow: hidden;
+ }
+ .card-header {
+ background: var(--primary);
+ color: white;
+ padding: 12px 20px;
+ font-size: 16px;
+ font-weight: 600;
+ display: flex;
+ align-items: center;
+ gap: 8px;
+ }
+ .card-header .badge {
+ background: rgba(255,255,255,0.2);
+ font-size: 11px;
+ padding: 2px 8px;
+ border-radius: 10px;
+ font-weight: 500;
+ }
+ .card-body {
+ padding: 20px;
+ }
+ /* Form Elements */
+ .form-group {
+ margin-bottom: 20px;
+ }
+ .form-group:last-child {
+ margin-bottom: 0;
+ }
+ .form-label {
+ display: block;
+ font-size: 14px;
+ font-weight: 500;
+ color: var(--gray-700);
+ margin-bottom: 6px;
+ }
+ .form-label .optional {
+ color: var(--gray-400);
+ font-weight: 400;
+ font-size: 13px;
+ }
+ .form-label .required::after {
+ content: ' *';
+ color: var(--error);
+ }
+ .form-input, .form-select, .form-textarea {
+ width: 100%;
+ padding: 10px 14px;
+ border: 1px solid var(--gray-300);
+ border-radius: var(--radius-sm);
+ font-size: 14px;
+ font-family: inherit;
+ color: var(--gray-800);
+ background: white;
+ transition: all 0.2s ease;
+ }
+ .form-input:focus, .form-select:focus, .form-textarea:focus {
+ outline: none;
+ border-color: var(--primary);
+ box-shadow: 0 0 0 3px var(--primary-light);
+ }
+ .form-input.error, .form-select.error, .form-textarea.error {
+ border-color: var(--error);
+ box-shadow: 0 0 0 3px rgba(220,38,38,0.1);
+ }
+ .form-input::placeholder, .form-textarea::placeholder {
+ color: var(--gray-300);
+ }
+ .form-textarea {
+ resize: vertical;
+ min-height: 80px;
+ }
+ .form-hint {
+ font-size: 12px;
+ color: var(--gray-400);
+ margin-top: 4px;
+ }
+ /* Number input */
+ .number-input {
+ width: 120px !important;
+ text-align: right;
+ }
+ /* Radio & Checkbox */
+ .radio-group, .checkbox-group {
+ display: flex;
+ gap: 20px;
+ flex-wrap: wrap;
+ }
+ .radio-item, .checkbox-item {
+ display: flex;
+ align-items: center;
+ gap: 8px;
+ cursor: pointer;
+ font-size: 14px;
+ color: var(--gray-700);
+ }
+ .radio-item input, .checkbox-item input {
+ width: 18px;
+ height: 18px;
+ accent-color: var(--primary);
+ cursor: pointer;
+ }
+ /* Sub-module */
+ .sub-module {
+ border: 1px solid var(--gray-200);
+ border-radius: var(--radius-sm);
+ padding: 16px;
+ margin-bottom: 16px;
+ background: var(--gray-50);
+ }
+ .sub-module-title {
+ font-size: 14px;
+ font-weight: 600;
+ color: var(--gray-700);
+ margin-bottom: 12px;
+ padding-bottom: 8px;
+ border-bottom: 1px solid var(--gray-200);
+ }
+ .field-row {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+ gap: 16px;
+ }
+ .field-row.three-col {
+ grid-template-columns: repeat(3, 1fr);
+ }
+ .field-row.two-col {
+ grid-template-columns: repeat(2, 1fr);
+ }
+ /* ComboBox */
+ .combobox {
+ position: relative;
+ }
+ .combobox-list {
+ position: absolute;
+ top: 100%;
+ left: 0;
+ right: 0;
+ max-height: 280px;
+ overflow-y: auto;
+ background: white;
+ border: 1px solid var(--gray-200);
+ border-radius: var(--radius-sm);
+ box-shadow: var(--shadow-lg);
+ z-index: 100;
+ display: none;
+ margin-top: 4px;
+ }
+ .combobox-list.show {
+ display: block;
+ }
+ .combobox-item {
+ padding: 10px 14px;
+ cursor: pointer;
+ font-size: 14px;
+ color: var(--gray-700);
+ transition: background 0.15s;
+ border-bottom: 1px solid var(--gray-100);
+ }
+ .combobox-item:last-child {
+ border-bottom: none;
+ }
+ .combobox-item:hover, .combobox-item.highlighted {
+ background: var(--primary-light);
+ }
+ .combobox-item.no-match {
+ color: var(--gray-400);
+ cursor: default;
+ }
+ .combobox-item.no-match:hover {
+ background: transparent;
+ }
+ /* Dynamic List */
+ .dynamic-list {
+ margin-top: 12px;
+ }
+ .dynamic-item {
+ background: white;
+ border: 1px solid var(--gray-200);
+ border-radius: var(--radius-sm);
+ padding: 16px;
+ margin-bottom: 12px;
+ position: relative;
+ }
+ .dynamic-item-header {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 12px;
+ font-weight: 600;
+ font-size: 14px;
+ color: var(--primary);
+ }
+ .btn-remove {
+ background: none;
+ border: none;
+ color: var(--error);
+ cursor: pointer;
+ font-size: 13px;
+ padding: 4px 8px;
+ border-radius: var(--radius-sm);
+ transition: background 0.15s;
+ }
+ .btn-remove:hover {
+ background: rgba(220,38,38,0.1);
+ }
+ .btn-add {
+ display: inline-flex;
+ align-items: center;
+ gap: 6px;
+ background: var(--primary-light);
+ color: var(--primary);
+ border: 1px dashed var(--primary);
+ padding: 8px 16px;
+ border-radius: var(--radius-sm);
+ cursor: pointer;
+ font-size: 14px;
+ font-weight: 500;
+ font-family: inherit;
+ transition: all 0.15s;
+ }
+ .btn-add:hover {
+ background: var(--primary);
+ color: white;
+ }
+ .btn-add:disabled {
+ opacity: 0.5;
+ cursor: not-allowed;
+ }
+ /* Buttons */
+ .btn-group {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ padding: 20px 0 40px;
+ gap: 12px;
+ }
+ .btn {
+ padding: 12px 32px;
+ border-radius: var(--radius-sm);
+ font-size: 15px;
+ font-weight: 600;
+ font-family: inherit;
+ cursor: pointer;
+ transition: all 0.2s ease;
+ border: none;
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ }
+ .btn-primary {
+ background: var(--primary);
+ color: white;
+ }
+ .btn-primary:hover {
+ background: var(--primary-dark);
+ transform: translateY(-1px);
+ box-shadow: var(--shadow-md);
+ }
+ .btn-secondary {
+ background: white;
+ color: var(--gray-600);
+ border: 1px solid var(--gray-300);
+ }
+ .btn-secondary:hover {
+ background: var(--gray-50);
+ border-color: var(--gray-400);
+ }
+ .btn-success {
+ background: var(--success);
+ color: white;
+ }
+ .btn-success:hover {
+ background: #15803d;
+ transform: translateY(-1px);
+ box-shadow: var(--shadow-md);
+ }
+ /* Loading State */
+ .btn-loading {
+ position: relative;
+ color: transparent !important;
+ pointer-events: none;
+ }
+ .btn-loading::after {
+ content: '';
+ position: absolute;
+ width: 18px;
+ height: 18px;
+ top: 50%;
+ left: 50%;
+ margin-left: -9px;
+ margin-top: -9px;
+ border: 2px solid rgba(255,255,255,0.3);
+ border-radius: 50%;
+ border-top-color: white;
+ animation: btnSpin 0.8s linear infinite;
+ }
+ .btn-secondary.btn-loading::after {
+ border-color: rgba(0,0,0,0.15);
+ border-top-color: var(--gray-600);
+ }
+ @keyframes btnSpin {
+ to { transform: rotate(360deg); }
+ }
+ .btn:disabled {
+ opacity: 0.6;
+ cursor: not-allowed;
+ transform: none !important;
+ box-shadow: none !important;
+ }
+ /* Conditional Section */
+ .conditional-section {
+ margin-top: 12px;
+ padding: 16px;
+ background: var(--gray-50);
+ border-radius: var(--radius-sm);
+ border: 1px solid var(--gray-200);
+ display: none;
+ }
+ .conditional-section.show {
+ display: block;
+ animation: fadeIn 0.25s ease;
+ }
+ /* Auto-expand Section */
+ .auto-expand-section {
+ margin-top: 16px;
+ }
+ .file-list {
+ margin-top: 12px;
+ text-align: left;
+ }
+ .file-item {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ padding: 8px 12px;
+ background: white;
+ border-radius: var(--radius-sm);
+ margin-bottom: 6px;
+ font-size: 13px;
+ }
+ .file-item-name {
+ color: var(--gray-700);
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+ }
+ .file-item-size {
+ color: var(--gray-400);
+ font-size: 12px;
+ margin-left: 8px;
+ }
+ /* Success Page */
+ .success-page {
+ display: none;
+ text-align: center;
+ padding: 60px 20px;
+ background: white;
+ border-radius: var(--radius);
+ box-shadow: var(--shadow);
+ margin-top: 20px;
+ }
+ .success-page.show {
+ display: block;
+ animation: fadeIn 0.5s ease;
+ }
+ .success-icon {
+ width: 72px;
+ height: 72px;
+ background: var(--success);
+ border-radius: 50%;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ margin: 0 auto 24px;
+ font-size: 36px;
+ color: white;
+ }
+ .success-title {
+ font-size: 22px;
+ font-weight: 700;
+ color: var(--gray-900);
+ margin-bottom: 12px;
+ }
+ .success-desc {
+ font-size: 15px;
+ color: var(--gray-500);
+ margin-bottom: 24px;
+ line-height: 1.8;
+ }
+ .share-link-box {
+ background: var(--gray-50);
+ border-radius: var(--radius-sm);
+ padding: 16px;
+ margin-top: 20px;
+ display: inline-flex;
+ align-items: center;
+ gap: 12px;
+ max-width: 100%;
+ }
+ .share-link-box input {
+ border: none;
+ background: transparent;
+ font-size: 14px;
+ color: var(--gray-600);
+ width: 280px;
+ outline: none;
+ }
+ /* Error Summary */
+ .error-summary {
+ background: rgba(220,38,38,0.05);
+ border: 1px solid rgba(220,38,38,0.2);
+ border-radius: var(--radius-sm);
+ padding: 12px 16px;
+ margin-bottom: 16px;
+ font-size: 13px;
+ color: var(--error);
+ display: none;
+ }
+ .error-summary.show {
+ display: block;
+ }
+ /* Responsive */
+ @media (max-width: 640px) {
+ body { padding: 12px 12px 40px; }
+ .survey-header h1 { font-size: 18px; }
+ .card-body { padding: 16px; }
+ .field-row.three-col, .field-row.two-col { grid-template-columns: 1fr; }
+ .step-label { display: none; }
+ .step-line { width: 20px; }
+ .btn { padding: 10px 20px; font-size: 14px; }
+ .number-input { width: 100% !important; text-align: left; }
+ }
+ /* Toast */
+ .toast {
+ position: fixed;
+ top: 20px;
+ left: 50%;
+ transform: translateX(-50%) translateY(-100px);
+ background: var(--gray-800);
+ color: white;
+ padding: 12px 24px;
+ border-radius: var(--radius-sm);
+ font-size: 14px;
+ z-index: 1000;
+ transition: transform 0.3s ease;
+ box-shadow: var(--shadow-lg);
+ }
+ .toast.show {
+ transform: translateX(-50%) translateY(0);
+ }
+ </style>
+</head>
+<body>
+ <div class="container">
+ <!-- Header -->
+ <div class="survey-header">
+ <h1>共青团服务和促进就业情况排摸</h1>
+ <p>请如实填写本周工作数据</p>
+ </div>
+
+ <!-- Progress Bar -->
+ <div class="progress-bar">
+ <div class="progress-step active" data-step="1">
+ <div class="step-circle active">1</div>
+ <span class="step-label">基础信息</span>
+ </div>
+ <div class="step-line" data-line="1"></div>
+ <div class="progress-step" data-step="2">
+ <div class="step-circle pending">2</div>
+ <span class="step-label">数据统计</span>
+ </div>
+ <div class="step-line" data-line="2"></div>
+ <div class="progress-step" data-step="3">
+ <div class="step-circle pending">3</div>
+ <span class="step-label">活动情况</span>
+ </div>
+ </div>
+
+ <!-- Page 1: 基础信息 -->
+ <div class="page active" id="page1">
+ <div class="card">
+ <div class="card-header">
+ <span>基础信息</span>
+ <span class="badge">第 1/3 页</span>
+ </div>
+ <div class="card-body">
+ <!-- 高校名称 -->
+ <div class="form-group">
+ <label class="form-label required">高校名称</label>
+ <div class="combobox">
+ <input type="text" class="form-input" id="universityInput" placeholder="输入搜索高校名称..." autocomplete="off">
+ <div class="combobox-list" id="universityList"></div>
+ </div>
+ <input type="hidden" id="university" data-required="true">
+ <div id="otherUniversityWrap" style="display:none;margin-top:8px;">
+ <input type="text" class="form-input" id="otherUniversity" placeholder="请输入高校全称">
+ </div>
+ </div>
+
+ <!-- 填报人姓名 -->
+ <div class="form-group">
+ <label class="form-label required">填报人姓名</label>
+ <input type="text" class="form-input" id="reporterName" data-required="true" placeholder="请输入姓名">
+ </div>
+
+ <!-- 填报人岗位 -->
+ <div class="form-group">
+ <label class="form-label required">填报人部门、职务</label>
+ <input type="text" class="form-input" id="reporterPosition" data-required="true" placeholder="请输入岗位">
+ </div>
+
+ <!-- 联系电话 -->
+ <div class="form-group">
+ <label class="form-label required">联系电话</label>
+ <input type="tel" class="form-input" id="phone" data-required="true" placeholder="请输入手机号">
+ <div class="form-hint">请输入11位手机号码</div>
+ </div>
+
+ <!-- 工作邮箱 -->
+ <div class="form-group">
+ <label class="form-label required">工作邮箱</label>
+ <input type="email" class="form-input" id="email" data-required="true" placeholder="example@university.edu.cn">
+ </div>
+
+ <!-- 统计周期 -->
+ <div class="form-group">
+ <label class="form-label required">统计周期</label>
+ <div class="field-row two-col">
+ <div>
+ <label class="form-hint" style="margin-bottom:4px;display:block;">开始日</label>
+ <input type="date" class="form-input" id="periodStart" data-required="true" pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
+ </div>
+ <div>
+ <label class="form-hint" style="margin-bottom:4px;display:block;">结束日</label>
+ <input type="date" class="form-input" id="periodEnd" data-required="true" pattern="\d{4}-\d{2}-\d{2}" placeholder="YYYY-MM-DD">
+ </div>
+ </div>
+ </div>
+
+ </div>
+ </div>
+
+ <div class="btn-group">
+ <div></div>
+ <button class="btn btn-primary" onclick="nextPage()">下一页 →</button>
+ </div>
+ </div>
+
+ <!-- Page 2: 数据统计 -->
+ <div class="page" id="page2">
+ <div class="error-summary" id="page2Error"></div>
+
+ <!-- 模块I: 大学生就业引航计划 -->
+ <div class="card">
+ <div class="card-header">
+ <span>模块I - 大学生就业引航计划</span>
+ </div>
+ <div class="card-body">
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">本周新增宣讲场次</label>
+ <input type="number" class="form-input number-input" id="m1_lectureNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">本周宣讲覆盖人次</label>
+ <input type="number" class="form-input number-input" id="m1_lectureCover" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label">截至本周累计校级宣讲场次 <span class="optional">(选填，如无变化可不填)</span></label>
+ <input type="number" class="form-input number-input" id="m1_lectureTotal" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">截至本周累计校级宣讲覆盖人次 <span class="optional">(选填)</span></label>
+ <input type="number" class="form-input number-input" id="m1_lectureTotalCover" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label required">是否已开展过校级就业引航宣讲</label>
+ <div class="radio-group">
+ <label class="radio-item"><input type="radio" name="m1_hasLecture" value="yes" checked> 是</label>
+ <label class="radio-item"><input type="radio" name="m1_hasLecture" value="no"> 否</label>
+ </div>
+ </div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">本周新增主题团日场次</label>
+ <input type="number" class="form-input number-input" id="m1_themeDayNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">截至本周累计主题团日场次 <span class="optional">(选填)</span></label>
+ <input type="number" class="form-input number-input" id="m1_themeDayTotal" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label required">省级宣讲参与情况</label>
+ <textarea class="form-textarea" id="m1_provinceLecture" data-required="true" rows="3" placeholder="请填写省级宣讲参与情况，50-200字，无填&ldquo;无&rdquo;"></textarea>
+ </div>
+ </div>
+ </div>
+
+ <!-- 模块II: 千校万岗 -->
+ <div class="card">
+ <div class="card-header">
+ <span>模块II - 千校万岗系列招聘计划（包括线上招聘会，不含"央企云招聘""就业有位来"）</span>
+ </div>
+ <div class="card-body">
+ <div class="field-row three-col">
+ <div class="form-group">
+ <label class="form-label required">本周新增招聘场次</label>
+ <input type="number" class="form-input number-input" id="m2_recruitNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">本周参与企业数量</label>
+ <input type="number" class="form-input number-input" id="m2_enterpriseNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">本周提供就业岗位数量</label>
+ <input type="number" class="form-input number-input" id="m2_jobsNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ <div class="field-row three-col">
+ <div class="form-group">
+ <label class="form-label">截至本周累计招聘场次 <span class="optional">(选填)</span></label>
+ <input type="number" class="form-input number-input" id="m2_recruitTotal" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">截至本周累计参与企业数 <span class="optional">(选填)</span></label>
+ <input type="number" class="form-input number-input" id="m2_enterpriseTotal" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">截至本周累计提供岗位数 <span class="optional">(选填)</span></label>
+ <input type="number" class="form-input number-input" id="m2_jobsTotal" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- 模块III: 扬帆计划 -->
+ <div class="card">
+ <div class="card-header">
+ <span>模块III - 扬帆计划</span>
+ </div>
+ <div class="card-body">
+ <!-- 政务实习 -->
+ <div class="sub-module">
+ <div class="sub-module-title">政务实习</div>
+ <label style="font-size:13px;color:var(--gray-500);margin-bottom:8px;display:block;">本周新增</label>
+ <div class="field-row three-col">
+ <div class="form-group">
+ <label class="form-label required">募集单位数</label>
+ <input type="number" class="form-input number-input" id="m3_gov_unitNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">岗位数</label>
+ <input type="number" class="form-input number-input" id="m3_gov_postNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">参与学生数</label>
+ <input type="number" class="form-input number-input" id="m3_gov_studentNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ <label style="font-size:13px;color:var(--gray-500);margin:12px 0 8px;display:block;">截至本周累计 <span class="optional">(选填)</span></label>
+ <div class="field-row three-col">
+ <div class="form-group">
+ <label class="form-label">累计单位数</label>
+ <input type="number" class="form-input number-input" id="m3_gov_unitTotal" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">累计岗位数</label>
+ <input type="number" class="form-input number-input" id="m3_gov_postTotal" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">累计学生数</label>
+ <input type="number" class="form-input number-input" id="m3_gov_studentTotal" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ </div>
+ <!-- 企业实习 -->
+ <div class="sub-module">
+ <div class="sub-module-title">企业实习</div>
+ <label style="font-size:13px;color:var(--gray-500);margin-bottom:8px;display:block;">本周新增</label>
+ <div class="field-row three-col">
+ <div class="form-group">
+ <label class="form-label required">募集单位数</label>
+ <input type="number" class="form-input number-input" id="m3_ent_unitNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">岗位数</label>
+ <input type="number" class="form-input number-input" id="m3_ent_postNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">参与学生数</label>
+ <input type="number" class="form-input number-input" id="m3_ent_studentNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ <label style="font-size:13px;color:var(--gray-500);margin:12px 0 8px;display:block;">截至本周累计 <span class="optional">(选填)</span></label>
+ <div class="field-row three-col">
+ <div class="form-group">
+ <label class="form-label">累计单位数</label>
+ <input type="number" class="form-input number-input" id="m3_ent_unitTotal" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">累计岗位数</label>
+ <input type="number" class="form-input number-input" id="m3_ent_postTotal" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">累计学生数</label>
+ <input type="number" class="form-input number-input" id="m3_ent_studentTotal" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ </div>
+ <!-- 职场体验 -->
+ <div class="sub-module">
+ <div class="sub-module-title">职场体验</div>
+ <div class="field-row two-col">
+ <div>
+ <label style="font-size:13px;color:var(--gray-500);margin-bottom:8px;display:block;">本周新增</label>
+ <div class="field-row two-col" style="gap:12px;">
+ <div class="form-group">
+ <label class="form-label required">场次</label>
+ <input type="number" class="form-input number-input" id="m3_work_eventNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">覆盖人次</label>
+ <input type="number" class="form-input number-input" id="m3_work_coverNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ </div>
+ <div>
+ <label style="font-size:13px;color:var(--gray-500);margin-bottom:8px;display:block;">截至本周累计 <span class="optional">(选填)</span></label>
+ <div class="field-row two-col" style="gap:12px;">
+ <div class="form-group">
+ <label class="form-label">场次</label>
+ <input type="number" class="form-input number-input" id="m3_work_eventTotal" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label">人次</label>
+ <input type="number" class="form-input number-input" id="m3_work_coverTotal" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- 模块IV: 创业带动就业 -->
+ <div class="card">
+ <div class="card-header">
+ <span>模块IV - 创业带动就业</span>
+ <span class="badge">数据可双周更新</span>
+ </div>
+ <div class="card-body">
+ <div class="field-row three-col">
+ <div class="form-group">
+ <label class="form-label required">本周新增青春小店数量</label>
+ <input type="number" class="form-input number-input" id="m4_shopNew" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">截至本周高校青春小店数量</label>
+ <input type="number" class="form-input number-input" id="m4_shopTotal" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">截至本周参与创业学生数</label>
+ <input type="number" class="form-input number-input" id="m4_startupStudents" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ </div>
+
+ <!-- 国赛 -->
+ <div class="sub-module">
+ <div class="sub-module-title">国赛获奖项目转化孵化情况本周新增</div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">项目落地数</label>
+ <input type="number" class="form-input number-input" id="m4_nation_project" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">成立公司数</label>
+ <input type="number" class="form-input number-input" id="m4_nation_company" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">引进人才数</label>
+ <input type="number" class="form-input number-input" id="m4_nation_talent" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">配套支持资金（万元）</label>
+ <input type="number" class="form-input number-input" id="m4_nation_fund" data-required="true" min="0" step="0.01" placeholder="0.00">
+ </div>
+ </div>
+ <div class="form-group" style="margin-top:12px;">
+ <label class="form-label required">国赛孵化转化描述</label>
+ <textarea class="form-textarea" id="m4_nation_desc" data-required="true" rows="3" placeholder="请描述国赛获奖项目孵化转化情况，100-300字"></textarea>
+ </div>
+ </div>
+
+ <!-- 省赛 -->
+ <div class="sub-module">
+ <div class="sub-module-title">省赛获奖项目转化孵化情况本周新增</div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">项目落地数</label>
+ <input type="number" class="form-input number-input" id="m4_province_project" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">成立公司数</label>
+ <input type="number" class="form-input number-input" id="m4_province_company" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">引进人才数</label>
+ <input type="number" class="form-input number-input" id="m4_province_talent" data-required="true" min="0" step="1" placeholder="0">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">配套支持资金（万元）</label>
+ <input type="number" class="form-input number-input" id="m4_province_fund" data-required="true" min="0" step="0.01" placeholder="0.00">
+ </div>
+ </div>
+ <div class="form-group" style="margin-top:12px;">
+ <label class="form-label required">省赛孵化转化描述</label>
+ <textarea class="form-textarea" id="m4_province_desc" data-required="true" rows="3" placeholder="请描述省赛获奖项目孵化转化情况，100-300字"></textarea>
+ </div>
+ </div>
+
+ <div class="form-group">
+ <label class="form-label">城市青春小店情况 <span class="optional">(选填，不掌握填"无"，50-200字)</span></label>
+ <textarea class="form-textarea" id="m4_cityShop" rows="3" placeholder="请描述城市青春小店情况，不掌握填&ldquo;无&rdquo;"></textarea>
+ </div>
+ </div>
+ </div>
+
+ <!-- 模块V: 其他有关工作 -->
+ <div class="card">
+ <div class="card-header">
+ <span>模块V - 其他有关工作</span>
+ </div>
+ <div class="card-body">
+ <!-- 调研 -->
+ <div class="form-group">
+ <label class="form-label required">本周就业相关工作调研是否有新增</label>
+ <div class="radio-group">
+ <label class="radio-item"><input type="radio" name="m5_research" value="yes" onchange="toggleSection('researchSection', true)"> 有</label>
+ <label class="radio-item"><input type="radio" name="m5_research" value="no" checked onchange="toggleSection('researchSection', false)"> 无</label>
+ </div>
+ <div class="conditional-section" id="researchSection">
+ <div class="dynamic-list" id="researchList"></div>
+ <button type="button" class="btn-add" id="researchAddBtn" onclick="addResearchItem()">+ 添加调研条目</button>
+ <div class="form-hint" style="margin-top:8px;">最多可添加20条</div>
+ </div>
+ </div>
+
+ <!-- 宣传报道 -->
+ <div class="form-group">
+ <label class="form-label required">本周就业相关工作报道（新媒体、传统媒体均包括在内）是否有新增</label>
+ <div class="radio-group">
+ <label class="radio-item"><input type="radio" name="m5_publicity" value="yes" onchange="toggleSection('publicitySection', true)"> 有</label>
+ <label class="radio-item"><input type="radio" name="m5_publicity" value="no" checked onchange="toggleSection('publicitySection', false)"> 无</label>
+ </div>
+ <div class="conditional-section" id="publicitySection">
+ <div class="dynamic-list" id="publicityList"></div>
+ <button type="button" class="btn-add" id="publicityAddBtn" onclick="addPublicityItem()">+ 添加宣传报道</button>
+ <div class="form-hint" style="margin-top:8px;">最多可添加30条</div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <div class="btn-group">
+ <button class="btn btn-secondary" onclick="prevPage()">← 上一页</button>
+ <button class="btn btn-primary" onclick="nextPage()">下一页 →</button>
+ </div>
+ </div>
+
+ <!-- Page 3: 活动情况 -->
+ <div class="page" id="page3">
+ <div class="error-summary" id="page3Error"></div>
+
+ <!-- 拟开展活动 -->
+ <div class="card">
+ <div class="card-header">
+ <span>拟开展活动</span>
+ </div>
+ <div class="card-body">
+ <div class="form-group">
+ <label class="form-label required">拟开展就业相关活动（请注意，前期填报在"拟开展活动"表单的，如目前已开展，应填入下述"已开展就业相关活动"表单）</label>
+ <input type="number" class="form-input number-input" id="plannedCount" data-required="true" min="0" max="50" step="1" placeholder="0" onchange="generatePlannedActivities()">
+ <div class="form-hint">输入数量后自动生成对应条目表单（最多50条）</div>
+ </div>
+ <div class="auto-expand-section" id="plannedActivitiesWrap"></div>
+ </div>
+ </div>
+
+ <!-- 已开展活动报道 -->
+ <div class="card">
+ <div class="card-header">
+ <span>已开展活动报道</span>
+ </div>
+ <div class="card-body">
+ <div class="form-group">
+ <label class="form-label required">报道条数</label>
+ <input type="number" class="form-input number-input" id="reportCount" data-required="true" min="0" max="50" step="1" placeholder="0" onchange="generateReportActivities()">
+ <div class="form-hint">输入数量后自动生成对应条目表单（最多50条）</div>
+ </div>
+ <div class="auto-expand-section" id="reportActivitiesWrap"></div>
+ </div>
+ </div>
+
+ <div class="btn-group">
+ <button class="btn btn-secondary" onclick="prevPage()">← 上一页</button>
+ <button class="btn btn-success" id="submitBtn" onclick="submitForm()">✓ 提交问卷</button>
+ </div>
+ </div>
+
+ <!-- Success Page -->
+ <div class="success-page" id="successPage">
+ <div class="success-icon">✓</div>
+ <div class="success-title">问卷提交成功！</div>
+ <div class="success-desc">
+ 感谢您填写本周共青团服务和促进就业情况排摸表。<br>
+ 您的数据已成功记录。
+ </div>
+ <div class="share-link-box">
+ <input type="text" id="shareLink" readonly value="">
+ <button class="btn btn-primary" style="padding:6px 16px;font-size:13px;" onclick="copyShareLink()">复制链接</button>
+ </div>
+ </div>
+
+ <!-- Toast -->
+ <div class="toast" id="toast"></div>
+ </div>
+
+<script>
+// ========== 70所高校列表 ==========
+const UNIVERSITIES = [
+ "复旦大学","上海交通大学","同济大学","华东师范大学","华东理工大学",
+ "上海外国语大学","东华大学","上海财经大学","上海大学","上海交通大学医学院",
+ "上海理工大学","上海海事大学","华东政法大学","上海海洋大学","上海中医药大学",
+ "上海师范大学","上海对外经贸大学","上海第二工业大学","上海工程技术大学","上海科技大学",
+ "上海社会科学院","上海音乐学院","上海戏剧学院","上海体育大学","上海电力大学",
+ "上海应用技术大学","上海立信会计金融学院","上海海关学院","上海商学院","上海电机学院",
+ "上海政法学院","上海健康医学院","上海杉达学院","上海建桥学院","上海兴伟学院",
+ "上海师范大学天华学院","上海视觉艺术学院","上海外国语大学贤达经济人文学院","上海立达学院","上海公安学院",
+ "中共上海市委党校","上海纽约大学","上海中侨职业技术大学","中国人民解放军海军军医大学","上海出版印刷高等专科学校",
+ "上海旅游高等专科学校","上海城建职业学院","上海电子信息职业技术学院","上海工艺美术职业学院","上海农林职业技术学院",
+ "上海东海职业技术学院","上海工商职业技术学院","上海济光职业技术学院","上海工商外国语职业学院","上海邦德职业技术学院",
+ "上海民远职业技术学院","上海思博职业技术学院","上海电影艺术职业学院","上海震旦职业学院","上海交通职业技术学院",
+ "上海行健职业学院","上海海事职业技术学院","上海民航职业技术学院","上海科学技术职业学院","上海南湖职业技术学院",
+ "上海科创职业技术学院","上海闵行职业技术学院","上海现代化工职业学院","上海建设管理职业技术学院","上海浦东职业技术学院"
+];
+
+// ========== 当前页码 ==========
+let currentPage = 1;
+const totalPages = 3;
+
+// ========== 动态数据存储 ==========
+let researchItems = [];
+let publicityItems = [];
+
+
+// ========== 初始化 ==========
+document.addEventListener('DOMContentLoaded', function() {
+ initUniversityCombobox();
+ setDefaultDates();
+ setupIntegerValidation();
+ tryRestore();
+});
+
+// ========== 高校搜索下拉 ==========
+function initUniversityCombobox() {
+ const input = document.getElementById('universityInput');
+ const list = document.getElementById('universityList');
+ const hidden = document.getElementById('university');
+ const otherWrap = document.getElementById('otherUniversityWrap');
+ let highlightedIndex = -1;
+
+ function renderList(filter = '') {
+ const filtered = UNIVERSITIES.filter(u => u.toLowerCase().includes(filter.toLowerCase()));
+ list.innerHTML = '';
+ highlightedIndex = -1;
+
+ if (filtered.length === 0 && filter) {
+ const item = document.createElement('div');
+ item.className = 'combobox-item no-match';
+ item.textContent = '无匹配结果';
+ list.appendChild(item);
+ } else {
+ filtered.forEach((u, i) => {
+ const item = document.createElement('div');
+ item.className = 'combobox-item';
+ item.textContent = u;
+ item.dataset.index = i;
+ item.onclick = () => selectUniversity(u);
+ list.appendChild(item);
+ });
+ }
+ // 添加"其他"选项
+ const otherItem = document.createElement('div');
+ otherItem.className = 'combobox-item';
+ otherItem.style.borderTop = '2px solid var(--gray-200)';
+ otherItem.style.fontWeight = '600';
+ otherItem.textContent = '├ 其他（手动输入）';
+ otherItem.onclick = () => selectUniversity('__OTHER__');
+ list.appendChild(otherItem);
+ }
+
+ function selectUniversity(value) {
+ if (value === '__OTHER__') {
+ input.value = '其他';
+ hidden.value = '__OTHER__';
+ otherWrap.style.display = 'block';
+ document.getElementById('otherUniversity').focus();
+ } else {
+ input.value = value;
+ hidden.value = value;
+ otherWrap.style.display = 'none';
+ }
+ list.classList.remove('show');
+ input.classList.remove('error');
+ }
+
+ // FIX: auto-match on blur if user typed exact university name
+ input.addEventListener('blur', () => {
+ setTimeout(() => {
+ if (!hidden.value && input.value.trim()) {
+ const exact = UNIVERSITIES.find(u => u === input.value.trim());
+ if (exact) selectUniversity(exact);
+ }
+ }, 200);
+ });
+
+ input.addEventListener('focus', () => {
+ renderList(input.value);
+ list.classList.add('show');
+ });
+ input.addEventListener('input', () => {
+ renderList(input.value);
+ list.classList.add('show');
+ });
+ input.addEventListener('keydown', (e) => {
+ const items = list.querySelectorAll('.combobox-item:not(.no-match)');
+ if (e.key === 'ArrowDown') {
+ e.preventDefault();
+ highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+ updateHighlight(items);
+ } else if (e.key === 'ArrowUp') {
+ e.preventDefault();
+ highlightedIndex = Math.max(highlightedIndex - 1, 0);
+ updateHighlight(items);
+ } else if (e.key === 'Enter') {
+ e.preventDefault();
+ if (highlightedIndex >= 0 && items[highlightedIndex]) {
+ items[highlightedIndex].click();
+ }
+ } else if (e.key === 'Escape') {
+ list.classList.remove('show');
+ }
+ });
+ document.addEventListener('click', (e) => {
+ if (!e.target.closest('.combobox')) {
+ list.classList.remove('show');
+ }
+ });
+
+ function updateHighlight(items) {
+ items.forEach((item, i) => {
+ item.classList.toggle('highlighted', i === highlightedIndex);
+ });
+ const highlighted = items[highlightedIndex];
+ if (highlighted) highlighted.scrollIntoView({ block: 'nearest' });
+ }
+
+ renderList();
+}
+
+// ========== 默认日期 ==========
+function setDefaultDates() {
+ const now = new Date();
+ const day = now.getDay(); // 0=Sun,1=Mon,2=Tue,3=Wed,...
+ const diffToWednesday = (day + 4) % 7; // days since last Wednesday
+ const wednesday = new Date(now);
+ wednesday.setDate(now.getDate() - diffToWednesday);
+ const tuesday = new Date(wednesday);
+ tuesday.setDate(wednesday.getDate() + 6);
+
+ document.getElementById('periodStart').value = formatDate(wednesday);
+ document.getElementById('periodEnd').value = formatDate(tuesday);
+ // dataDeadline removed
+}
+function formatDate(d) {
+ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// ========== 整数输入校验 ==========
+function setupIntegerValidation() {
+ document.querySelectorAll('input[type="number"][step="1"]').forEach(input => {
+ input.addEventListener('input', function() {
+ if (this.value !== '' && !/^\d*$/.test(this.value)) {
+ this.value = this.value.replace(/\D/g, '');
+ }
+ });
+ input.addEventListener('blur', function() {
+ if (this.value !== '') {
+ this.value = Math.max(0, parseInt(this.value) || 0);
+ }
+ });
+ });
+}
+
+// ========== 分页控制 ==========
+function updateProgress() {
+ document.querySelectorAll('.progress-step').forEach((step, idx) => {
+ const circle = step.querySelector('.step-circle');
+ const stepNum = idx + 1;
+ circle.classList.remove('pending', 'active', 'completed');
+ step.classList.remove('active');
+ if (stepNum < currentPage) {
+ circle.classList.add('completed');
+ circle.textContent = '✓';
+ step.classList.add('completed');
+ } else if (stepNum === currentPage) {
+ circle.classList.add('active');
+ circle.textContent = stepNum;
+ step.classList.add('active');
+ } else {
+ circle.classList.add('pending');
+ circle.textContent = stepNum;
+ }
+ });
+ document.querySelectorAll('.step-line').forEach((line, idx) => {
+ line.classList.toggle('completed', idx < currentPage - 1);
+ });
+}
+
+function showPage(pageNum) {
+ document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+ document.getElementById('page' + pageNum).classList.add('active');
+ window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextPage() {
+ if (validatePage(currentPage)) {
+ const errEl = document.getElementById('page' + currentPage + 'Error');
+ if (errEl) errEl.classList.remove('show');
+ if (currentPage < totalPages) {
+ currentPage++;
+ showPage(currentPage);
+ updateProgress();
+ }
+ } else {
+ showToast('请完善标红必填项后再继续');
+ }
+}
+
+function prevPage() {
+ if (currentPage > 1) {
+ currentPage--;
+ showPage(currentPage);
+ updateProgress();
+ const errEl = document.getElementById('page' + currentPage + 'Error');
+ if (errEl) errEl.classList.remove('show');
+ }
+}
+
+// ========== 页面校验 ==========
+function validatePage(pageNum) {
+ const pageEl = document.getElementById('page' + pageNum);
+ const requiredEls = pageEl.querySelectorAll('[data-required="true"]');
+ let valid = true;
+ requiredEls.forEach(el => {
+ el.classList.remove('error');
+ let val = el.value.trim();
+ if (el.type === 'number') {
+ val = el.value;
+ if (val === '' || parseFloat(val) < 0) {
+ el.classList.add('error');
+ valid = false;
+ }
+ } else if (el.type === 'hidden') {
+ // 高校名称特殊处理
+ if (val === '' || val === '__OTHER__') {
+ const otherInput = document.getElementById('otherUniversity');
+ if (val === '__OTHER__' && otherInput && otherInput.value.trim()) {
+ // 其他且有输入，通过
+ } else if (val === '') {
+ // FIX: auto-fix if input has exact match
+ const inputVal = document.getElementById('universityInput').value.trim();
+ const exact = UNIVERSITIES.find(u => u === inputVal);
+ if (exact) {
+ el.value = exact;
+ } else {
+ document.getElementById('universityInput').classList.add('error');
+ valid = false;
+ }
+ }
+ }
+ } else if (val === '') {
+ el.classList.add('error');
+ valid = false;
+ }
+ // 电话校验
+ if (el.id === 'phone' && val) {
+ if (!/^1[3-9]\d{9}$/.test(val)) {
+ el.classList.add('error');
+ valid = false;
+ }
+ }
+ // 邮箱校验
+ if (el.id === 'email' && val) {
+ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+ el.classList.add('error');
+ valid = false;
+ }
+ }
+ });
+
+ // 模块V 调研和宣传 - 选"有"时必须至少有一条
+ if (pageNum === 2) {
+ const researchVal = document.querySelector('input[name="m5_research"]:checked')?.value;
+ if (researchVal === 'yes' && researchItems.length === 0) {
+ valid = false;
+ showToast('请至少添加一条调研记录');
+ }
+ const publicityVal = document.querySelector('input[name="m5_publicity"]:checked')?.value;
+ if (publicityVal === 'yes' && publicityItems.length === 0) {
+ valid = false;
+ showToast('请至少添加一条宣传报道记录');
+ }
+ }
+
+ return valid;
+}
+
+// ========== 条件显示 ==========
+function toggleSection(sectionId, show) {
+ const section = document.getElementById(sectionId);
+ if (show) {
+ section.classList.add('show');
+ // 初始化至少一个空条目
+ if (sectionId === 'researchSection' && researchItems.length === 0) addResearchItem();
+ if (sectionId === 'publicitySection' && publicityItems.length === 0) addPublicityItem();
+ } else {
+ section.classList.remove('show');
+ }
+}
+
+// ========== 调研条目 ==========
+function addResearchItem(data = null) {
+ if (researchItems.length >= 20) {
+ showToast('最多添加20条调研记录');
+ return;
+ }
+ const id = Date.now() + Math.random();
+ researchItems.push({ id, data });
+ renderResearchList();
+}
+function removeResearchItem(id) {
+ researchItems = researchItems.filter(item => item.id !== id);
+ renderResearchList();
+}
+function renderResearchList() {
+ const list = document.getElementById('researchList');
+ list.innerHTML = researchItems.map((item, index) => `
+ <div class="dynamic-item">
+ <div class="dynamic-item-header">
+ <span>调研 ${index + 1}</span>
+ <button type="button" class="btn-remove" onclick="removeResearchItem(${item.id})">删除</button>
+ </div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">时间</label>
+ <input type="date" class="form-input research-date" data-id="${item.id}" value="${item.data?.date || ''}" pattern="\\d{4}-\\d{2}-\\d{2}" placeholder="YYYY-MM-DD">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">调研名称</label>
+ <input type="text" class="form-input research-name" data-id="${item.id}" placeholder="请输入调研名称" value="${item.data?.name || ''}">
+ </div>
+ </div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">调研单位</label>
+ <input type="text" class="form-input research-org" data-id="${item.id}" placeholder="请输入调研单位" value="${item.data?.org || ''}">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">成果</label>
+ <input type="text" class="form-input research-result" data-id="${item.id}" placeholder="请输入调研成果" value="${item.data?.result || ''}">
+ </div>
+ </div>
+ </div>
+ `).join('');
+ document.getElementById('researchAddBtn').disabled = researchItems.length >= 20;
+}
+
+// ========== 宣传报道条目 ==========
+function addPublicityItem(data = null) {
+ if (publicityItems.length >= 30) {
+ showToast('最多添加30条宣传报道');
+ return;
+ }
+ const id = Date.now() + Math.random();
+ publicityItems.push({ id, data });
+ renderPublicityList();
+}
+function removePublicityItem(id) {
+ publicityItems = publicityItems.filter(item => item.id !== id);
+ renderPublicityList();
+}
+function renderPublicityList() {
+ const list = document.getElementById('publicityList');
+ list.innerHTML = publicityItems.map((item, index) => `
+ <div class="dynamic-item">
+ <div class="dynamic-item-header">
+ <span>宣传报道 ${index + 1}</span>
+ <button type="button" class="btn-remove" onclick="removePublicityItem(${item.id})">删除</button>
+ </div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">时间</label>
+ <input type="date" class="form-input publicity-date" data-id="${item.id}" value="${item.data?.date || ''}" pattern="\\d{4}-\\d{2}-\\d{2}" placeholder="YYYY-MM-DD">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">活动名称</label>
+ <input type="text" class="form-input publicity-name" data-id="${item.id}" placeholder="请输入活动名称" value="${item.data?.name || ''}">
+ </div>
+ </div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">媒体名称</label>
+ <input type="text" class="form-input publicity-media" data-id="${item.id}" placeholder="请输入媒体名称" value="${item.data?.media || ''}">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">层级</label>
+ <select class="form-select publicity-level" data-id="${item.id}">
+ <option value="">请选择</option>
+ <option value="国家级" ${item.data?.level === '国家级' ? 'selected' : ''}>国家级</option>
+ <option value="省级" ${item.data?.level === '省级' ? 'selected' : ''}>省级</option>
+ <option value="市级" ${item.data?.level === '市级' ? 'selected' : ''}>市级</option>
+ <option value="校级" ${item.data?.level === '校级' ? 'selected' : ''}>校级</option>
+ <option value="其他" ${item.data?.level === '其他' ? 'selected' : ''}>其他</option>
+ </select>
+ </div>
+ </div>
+ <div class="form-group" style="margin-top:8px;">
+ <label class="form-label required">报道链接</label>
+ <input type="url" class="form-input publicity-url" data-id="${item.id}" placeholder="https://..." value="${item.data?.url || ''}">
+ </div>
+ </div>
+ `).join('');
+ document.getElementById('publicityAddBtn').disabled = publicityItems.length >= 30;
+}
+
+// ========== 拟开展活动 自动生成 ==========
+function generatePlannedActivities() {
+ const count = parseInt(document.getElementById('plannedCount').value) || 0;
+ const wrap = document.getElementById('plannedActivitiesWrap');
+ if (count <= 0) { wrap.innerHTML = ''; return; }
+ if (count > 50) {
+ document.getElementById('plannedCount').value = 50;
+ showToast('最多50条');
+ generatePlannedActivities();
+ return;
+ }
+ // 保留已有数据
+ const existing = {};
+ wrap.querySelectorAll('.planned-item').forEach(item => {
+ const idx = item.dataset.index;
+ existing[idx] = {
+ date: item.querySelector('.p-date').value,
+ name: item.querySelector('.p-name').value,
+ location: item.querySelector('.p-location').value,
+ organizer: item.querySelector('.p-organizer').value,
+ intro: item.querySelector('.p-intro').value
+ };
+ });
+ let html = '';
+ for (let i = 0; i < count; i++) {
+ const d = existing[i] || {};
+ html += `
+ <div class="dynamic-item planned-item" data-index="${i}">
+ <div class="dynamic-item-header"><span>活动 ${i + 1}</span></div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">活动时间</label>
+ <input type="date" class="form-input p-date" value="${d.date || ''}" pattern="\\d{4}-\\d{2}-\\d{2}" placeholder="YYYY-MM-DD">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">活动名称</label>
+ <input type="text" class="form-input p-name" maxlength="60" placeholder="限60字" value="${d.name || ''}">
+ </div>
+ </div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">活动地点</label>
+ <input type="text" class="form-input p-location" maxlength="60" placeholder="限60字" value="${d.location || ''}">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">主承办单位</label>
+ <input type="text" class="form-input p-organizer" maxlength="80" placeholder="限80字" value="${d.organizer || ''}">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label required">活动简介</label>
+ <textarea class="form-textarea p-intro" maxlength="100" rows="2" placeholder="限100字">${d.intro || ''}</textarea>
+ </div>
+ </div>`;
+ }
+ wrap.innerHTML = html;
+}
+
+// ========== 已开展活动报道 自动生成 ==========
+function generateReportActivities() {
+ const count = parseInt(document.getElementById('reportCount').value) || 0;
+ const wrap = document.getElementById('reportActivitiesWrap');
+ if (count <= 0) { wrap.innerHTML = ''; return; }
+ if (count > 50) {
+ document.getElementById('reportCount').value = 50;
+ showToast('最多50条');
+ generateReportActivities();
+ return;
+ }
+ const existing = {};
+ wrap.querySelectorAll('.report-item').forEach(item => {
+ const idx = item.dataset.index;
+ existing[idx] = {
+ title: item.querySelector('.r-title').value,
+ date: item.querySelector('.r-date').value,
+ platform: item.querySelector('.r-platform').value,
+ url: item.querySelector('.r-url').value,
+ summary: item.querySelector('.r-summary').value
+ };
+ });
+ let html = '';
+ for (let i = 0; i < count; i++) {
+ const d = existing[i] || {};
+ html += `
+ <div class="dynamic-item report-item" data-index="${i}">
+ <div class="dynamic-item-header"><span>报道 ${i + 1}</span></div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">新闻标题</label>
+ <input type="text" class="form-input r-title" maxlength="60" placeholder="限60字" value="${d.title || ''}">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">推送时间</label>
+ <input type="date" class="form-input r-date" value="${d.date || ''}" pattern="\\d{4}-\\d{2}-\\d{2}" placeholder="YYYY-MM-DD">
+ </div>
+ </div>
+ <div class="field-row">
+ <div class="form-group">
+ <label class="form-label required">推送平台</label>
+ <input type="text" class="form-input r-platform" placeholder="如：微信公众号、官网等" value="${d.platform || ''}">
+ </div>
+ <div class="form-group">
+ <label class="form-label required">报道链接</label>
+ <input type="url" class="form-input r-url" placeholder="https://..." value="${d.url || ''}">
+ </div>
+ </div>
+ <div class="form-group">
+ <label class="form-label required">活动摘要</label>
+ <textarea class="form-textarea r-summary" maxlength="100" rows="2" placeholder="限100字">${d.summary || ''}</textarea>
+ </div>
+ </div>`;
+ }
+ wrap.innerHTML = html;
+}
+
+// ========== 文件上传 ==========
+// ========== 提交 ==========
+let isSubmitting = false;
+
+function submitForm() {
+ if (isSubmitting) return;
+ if (!validatePage(3)) {
+ showToast('请完善标红必填项后再提交');
+ return;
+ }
+
+ isSubmitting = true;
+ const btn = document.getElementById('submitBtn');
+ if (btn) {
+ btn.classList.add('btn-loading');
+ btn.disabled = true;
+ }
+
+ const data = collectData();
+
+ // 日期格式和顺序校验
+ const dateRe = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+ if (!dateRe.test(data.periodStart)) { showToast('统计周期开始日格式错误'); isSubmitting = false; btn.classList.remove('btn-loading'); btn.disabled = false; return; }
+ if (!dateRe.test(data.periodEnd)) { showToast('统计周期结束日格式错误'); isSubmitting = false; btn.classList.remove('btn-loading'); btn.disabled = false; return; }
+ if (data.periodStart > data.periodEnd) { showToast('统计周期开始日不能晚于结束日'); isSubmitting = false; btn.classList.remove('btn-loading'); btn.disabled = false; return; }
+
+ const { module1, module2, module3, module4 } = data;
+
+ // 数值字段≥0校验
+ const negativeFields = [];
+ if (module1.lectureNew < 0) negativeFields.push('本周新增宣讲场次');
+ if (module1.lectureCover < 0) negativeFields.push('本周宣讲覆盖人次');
+ if (module1.themeDayNew < 0) negativeFields.push('本周新增主题团日场次');
+ if (module2.recruitNew < 0) negativeFields.push('本周新增招聘场次');
+ if (module2.enterpriseNew < 0) negativeFields.push('本周参与企业数量');
+ if (module2.jobsNew < 0) negativeFields.push('本周提供就业岗位数量');
+ if (module3.gov?.unitNew < 0) negativeFields.push('政务实习本周新增募集单位数');
+ if (module3.gov?.postNew < 0) negativeFields.push('政务实习本周新增募集岗位数');
+ if (module3.gov?.studentNew < 0) negativeFields.push('政务实习本周新增参与学生数');
+ if (module3.enterprise?.unitNew < 0) negativeFields.push('企业实习本周新增募集单位数');
+ if (module3.enterprise?.postNew < 0) negativeFields.push('企业实习本周新增募集岗位数');
+ if (module3.enterprise?.studentNew < 0) negativeFields.push('企业实习本周新增参与学生数');
+ if (module3.work?.eventNew < 0) negativeFields.push('职场体验本周新增场次');
+ if (module3.work?.coverNew < 0) negativeFields.push('职场体验本周覆盖人次');
+ if (module4.shopNew < 0) negativeFields.push('本周新增青春小店数量');
+
+ if (negativeFields.length > 0) {
+ showToast('以下字段不能为负数：' + negativeFields.join('、'));
+ isSubmitting = false;
+ btn.classList.remove('btn-loading');
+ btn.disabled = false;
+ return;
+ }
+
+ // POST 到 /api/submit
+ fetch('/api/submit', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify(data)
+ })
+ .then(r => {
+ if (!r.ok) throw new Error('提交失败: ' + r.status);
+ return r.json();
+ })
+ .then(res => {
+ try { localStorage.removeItem('survey_autosave'); } catch (e) {}
+ showSuccess(res);
+ })
+ .catch(err => {
+ console.error('Submit error:', err);
+ showToast(err.message || '提交失败，请检查网络后重试');
+ btn.classList.remove('btn-loading');
+ btn.disabled = false;
+ })
+ .finally(() => {
+ isSubmitting = false;
+ });
+}
+
+function collectData() {
+ const universityVal = document.getElementById('university').value;
+ const university = universityVal === '__OTHER__' ? document.getElementById('otherUniversity').value.trim() : universityVal;
+
+ // 收集调研
+ const research = [];
+ document.querySelectorAll('#researchList .dynamic-item').forEach(item => {
+ research.push({
+ date: item.querySelector('.research-date').value,
+ name: item.querySelector('.research-name').value,
+ org: item.querySelector('.research-org').value,
+ result: item.querySelector('.research-result').value
+ });
+ });
+
+ // 收集宣传
+ const publicity = [];
+ document.querySelectorAll('#publicityList .dynamic-item').forEach(item => {
+ publicity.push({
+ date: item.querySelector('.publicity-date').value,
+ name: item.querySelector('.publicity-name').value,
+ media: item.querySelector('.publicity-media').value,
+ level: item.querySelector('.publicity-level').value,
+ url: item.querySelector('.publicity-url').value
+ });
+ });
+
+ // 收集拟开展活动
+ const plannedActivities = [];
+ document.querySelectorAll('.planned-item').forEach(item => {
+ plannedActivities.push({
+ date: item.querySelector('.p-date').value,
+ name: item.querySelector('.p-name').value,
+ location: item.querySelector('.p-location').value,
+ organizer: item.querySelector('.p-organizer').value,
+ intro: item.querySelector('.p-intro').value
+ });
+ });
+
+ // 收集已开展报道
+ const reports = [];
+ document.querySelectorAll('.report-item').forEach(item => {
+ reports.push({
+ title: item.querySelector('.r-title').value,
+ date: item.querySelector('.r-date').value,
+ platform: item.querySelector('.r-platform').value,
+ url: item.querySelector('.r-url').value,
+ summary: item.querySelector('.r-summary').value
+ });
+ });
+
+ return {
+ // 基础信息
+ university,
+ reporterName: document.getElementById('reporterName').value.trim(),
+ reporterPosition: document.getElementById('reporterPosition').value.trim(),
+ phone: document.getElementById('phone').value.trim(),
+ email: document.getElementById('email').value.trim(),
+ periodStart: document.getElementById('periodStart').value,
+ periodEnd: document.getElementById('periodEnd').value,
+ // dataDeadline removed
+
+ // 模块I
+ module1: {
+ lectureNew: parseInt(document.getElementById('m1_lectureNew').value) || 0,
+ lectureCover: parseInt(document.getElementById('m1_lectureCover').value) || 0,
+ lectureTotal: document.getElementById('m1_lectureTotal').value ? parseInt(document.getElementById('m1_lectureTotal').value) : null,
+ lectureTotalCover: document.getElementById('m1_lectureTotalCover').value ? parseInt(document.getElementById('m1_lectureTotalCover').value) : null,
+ hasLecture: document.querySelector('input[name="m1_hasLecture"]:checked')?.value === 'yes',
+ themeDayNew: parseInt(document.getElementById('m1_themeDayNew').value) || 0,
+ themeDayTotal: document.getElementById('m1_themeDayTotal').value ? parseInt(document.getElementById('m1_themeDayTotal').value) : null,
+ provinceLecture: document.getElementById('m1_provinceLecture').value.trim()
+ },
+
+ // 模块II
+ module2: {
+ recruitNew: parseInt(document.getElementById('m2_recruitNew').value) || 0,
+ enterpriseNew: parseInt(document.getElementById('m2_enterpriseNew').value) || 0,
+ jobsNew: parseInt(document.getElementById('m2_jobsNew').value) || 0,
+ recruitTotal: document.getElementById('m2_recruitTotal').value ? parseInt(document.getElementById('m2_recruitTotal').value) : null,
+ enterpriseTotal: document.getElementById('m2_enterpriseTotal').value ? parseInt(document.getElementById('m2_enterpriseTotal').value) : null,
+ jobsTotal: document.getElementById('m2_jobsTotal').value ? parseInt(document.getElementById('m2_jobsTotal').value) : null
+ },
+
+ // 模块III
+ module3: {
+ gov: {
+ unitNew: parseInt(document.getElementById('m3_gov_unitNew').value) || 0,
+ postNew: parseInt(document.getElementById('m3_gov_postNew').value) || 0,
+ studentNew: parseInt(document.getElementById('m3_gov_studentNew').value) || 0,
+ unitTotal: document.getElementById('m3_gov_unitTotal').value ? parseInt(document.getElementById('m3_gov_unitTotal').value) : null,
+ postTotal: document.getElementById('m3_gov_postTotal').value ? parseInt(document.getElementById('m3_gov_postTotal').value) : null,
+ studentTotal: document.getElementById('m3_gov_studentTotal').value ? parseInt(document.getElementById('m3_gov_studentTotal').value) : null
+ },
+ enterprise: {
+ unitNew: parseInt(document.getElementById('m3_ent_unitNew').value) || 0,
+ postNew: parseInt(document.getElementById('m3_ent_postNew').value) || 0,
+ studentNew: parseInt(document.getElementById('m3_ent_studentNew').value) || 0,
+ unitTotal: document.getElementById('m3_ent_unitTotal').value ? parseInt(document.getElementById('m3_ent_unitTotal').value) : null,
+ postTotal: document.getElementById('m3_ent_postTotal').value ? parseInt(document.getElementById('m3_ent_postTotal').value) : null,
+ studentTotal: document.getElementById('m3_ent_studentTotal').value ? parseInt(document.getElementById('m3_ent_studentTotal').value) : null
+ },
+ work: {
+ eventNew: parseInt(document.getElementById('m3_work_eventNew').value) || 0,
+ coverNew: parseInt(document.getElementById('m3_work_coverNew').value) || 0,
+ eventTotal: document.getElementById('m3_work_eventTotal').value ? parseInt(document.getElementById('m3_work_eventTotal').value) : null,
+ coverTotal: document.getElementById('m3_work_coverTotal').value ? parseInt(document.getElementById('m3_work_coverTotal').value) : null
+ }
+ },
+
+ // 模块IV
+ module4: {
+ shopNew: parseInt(document.getElementById('m4_shopNew').value) || 0,
+ shopTotal: parseInt(document.getElementById('m4_shopTotal').value) || 0,
+ startupStudents: parseInt(document.getElementById('m4_startupStudents').value) || 0,
+ national: {
+ project: parseInt(document.getElementById('m4_nation_project').value) || 0,
+ company: parseInt(document.getElementById('m4_nation_company').value) || 0,
+ talent: parseInt(document.getElementById('m4_nation_talent').value) || 0,
+ fund: parseFloat(document.getElementById('m4_nation_fund').value) || 0,
+ desc: document.getElementById('m4_nation_desc').value.trim()
+ },
+ provincial: {
+ project: parseInt(document.getElementById('m4_province_project').value) || 0,
+ company: parseInt(document.getElementById('m4_province_company').value) || 0,
+ talent: parseInt(document.getElementById('m4_province_talent').value) || 0,
+ fund: parseFloat(document.getElementById('m4_province_fund').value) || 0,
+ desc: document.getElementById('m4_province_desc').value.trim()
+ },
+ cityShop: document.getElementById('m4_cityShop').value.trim() || null
+ },
+
+ // 模块V
+ module5: {
+ hasResearch: document.querySelector('input[name="m5_research"]:checked')?.value === 'yes',
+ research: document.querySelector('input[name="m5_research"]:checked')?.value === 'yes' ? research : [],
+ hasPublicity: document.querySelector('input[name="m5_publicity"]:checked')?.value === 'yes',
+ publicity: document.querySelector('input[name="m5_publicity"]:checked')?.value === 'yes' ? publicity : []
+ },
+
+ // 第三页
+ plannedCount: parseInt(document.getElementById('plannedCount').value) || 0,
+ plannedActivities,
+ reportCount: parseInt(document.getElementById('reportCount').value) || 0,
+ reports,
+ submitTime: new Date().toISOString()
+ };
+}
+
+function showSuccess(res) {
+ document.querySelector('.survey-header').style.display = 'none';
+ document.querySelector('.progress-bar').style.display = 'none';
+ document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+ document.getElementById('successPage').classList.add('show');
+ const link = window.location.origin + '/survey?id=' + (res.id || res.surveyId || 'unknown');
+ document.getElementById('shareLink').value = link;
+}
+
+function copyShareLink() {
+ const input = document.getElementById('shareLink');
+ input.select();
+ navigator.clipboard.writeText(input.value).then(() => {
+ showToast('链接已复制到剪贴板');
+ });
+}
+
+function showToast(msg) {
+ const toast = document.getElementById('toast');
+ toast.textContent = msg;
+ toast.classList.add('show');
+ setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ========== 自动保存 ==========
+const AUTOSAVE_KEY = 'survey_autosave';
+let debounceTimer = null;
+
+function captureResearchData() {
+ const items = [];
+ document.querySelectorAll('#researchList .dynamic-item').forEach(item => {
+  items.push({
+   date: item.querySelector('.research-date')?.value || '',
+   name: item.querySelector('.research-name')?.value || '',
+   org: item.querySelector('.research-org')?.value || '',
+   result: item.querySelector('.research-result')?.value || ''
+  });
+ });
+ return items;
+}
+
+function capturePublicityData() {
+ const items = [];
+ document.querySelectorAll('#publicityList .dynamic-item').forEach(item => {
+  items.push({
+   date: item.querySelector('.publicity-date')?.value || '',
+   name: item.querySelector('.publicity-name')?.value || '',
+   media: item.querySelector('.publicity-media')?.value || '',
+   level: item.querySelector('.publicity-level')?.value || '',
+   url: item.querySelector('.publicity-url')?.value || ''
+  });
+ });
+ return items;
+}
+
+function capturePlannedData() {
+ const items = [];
+ document.querySelectorAll('.planned-item').forEach(item => {
+  const idx = item.dataset.index;
+  if (idx !== undefined) {
+   items[idx] = {
+    date: item.querySelector('.p-date')?.value || '',
+    name: item.querySelector('.p-name')?.value || '',
+    location: item.querySelector('.p-location')?.value || '',
+    organizer: item.querySelector('.p-organizer')?.value || '',
+    intro: item.querySelector('.p-intro')?.value || ''
+   };
+  }
+ });
+ return items;
+}
+
+function captureReportData() {
+ const items = [];
+ document.querySelectorAll('.report-item').forEach(item => {
+  const idx = item.dataset.index;
+  if (idx !== undefined) {
+   items[idx] = {
+    title: item.querySelector('.r-title')?.value || '',
+    date: item.querySelector('.r-date')?.value || '',
+    platform: item.querySelector('.r-platform')?.value || '',
+    url: item.querySelector('.r-url')?.value || '',
+    summary: item.querySelector('.r-summary')?.value || ''
+   };
+  }
+ });
+ return items;
+}
+
+function autoSave() {
+ try {
+  const saveData = {
+   inputs: {},
+   radios: {},
+   research: captureResearchData(),
+   publicity: capturePublicityData(),
+   planned: capturePlannedData(),
+   plannedCount: document.getElementById('plannedCount')?.value || '0',
+   reports: captureReportData(),
+   reportCount: document.getElementById('reportCount')?.value || '0',
+   currentPage: currentPage,
+   timestamp: Date.now()
+  };
+
+  const inputIds = [
+   'universityInput', 'university', 'otherUniversity',
+   'reporterName', 'reporterPosition', 'phone', 'email',
+   'periodStart', 'periodEnd',
+   'm1_lectureNew', 'm1_lectureCover', 'm1_lectureTotal', 'm1_lectureTotalCover',
+   'm1_themeDayNew', 'm1_themeDayTotal',
+   'm1_provinceLecture',
+   'm2_recruitNew', 'm2_enterpriseNew', 'm2_jobsNew',
+   'm2_recruitTotal', 'm2_enterpriseTotal', 'm2_jobsTotal',
+   'm3_gov_unitNew', 'm3_gov_postNew', 'm3_gov_studentNew',
+   'm3_gov_unitTotal', 'm3_gov_postTotal', 'm3_gov_studentTotal',
+   'm3_ent_unitNew', 'm3_ent_postNew', 'm3_ent_studentNew',
+   'm3_ent_unitTotal', 'm3_ent_postTotal', 'm3_ent_studentTotal',
+   'm3_work_eventNew', 'm3_work_coverNew', 'm3_work_eventTotal', 'm3_work_coverTotal',
+   'm4_shopNew', 'm4_shopTotal', 'm4_startupStudents',
+   'm4_nation_project', 'm4_nation_company', 'm4_nation_talent', 'm4_nation_fund',
+   'm4_nation_desc',
+   'm4_province_project', 'm4_province_company', 'm4_province_talent', 'm4_province_fund',
+   'm4_province_desc',
+   'm4_cityShop',
+   'plannedCount', 'reportCount'
+  ];
+
+  inputIds.forEach(id => {
+   const el = document.getElementById(id);
+   if (el) saveData.inputs[id] = el.value;
+  });
+
+  ['m1_hasLecture', 'm5_research', 'm5_publicity'].forEach(name => {
+   const checked = document.querySelector(`input[name="${name}"]:checked`);
+   if (checked) saveData.radios[name] = checked.value;
+  });
+
+  localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(saveData));
+ } catch (e) {
+  console.warn('Auto-save failed:', e);
+ }
+}
+
+function tryRestore() {
+ try {
+  const saved = localStorage.getItem(AUTOSAVE_KEY);
+  if (!saved) return;
+
+  const data = JSON.parse(saved);
+  if (!data || !data.timestamp) return;
+
+  const age = Date.now() - data.timestamp;
+  const ageText = age < 60000 ? '刚刚' :
+   age < 3600000 ? Math.floor(age / 60000) + '分钟前' :
+   age < 86400000 ? Math.floor(age / 3600000) + '小时前' :
+   Math.floor(age / 86400000) + '天前';
+
+  if (!confirm(`检测到 ${ageText} 自动保存的未提交数据，是否恢复？\n\n点击"确定"恢复之前填写的内容，点击"取消"从头开始填写。`)) {
+   localStorage.removeItem(AUTOSAVE_KEY);
+   return;
+  }
+
+  restoreFormData(data);
+ } catch (e) {
+  console.warn('Restore failed:', e);
+ }
+}
+
+function restoreFormData(data) {
+ if (!data) return;
+
+ if (data.inputs) {
+  Object.entries(data.inputs).forEach(([id, value]) => {
+   const el = document.getElementById(id);
+   if (el) el.value = value;
+  });
+ }
+
+ if (data.radios) {
+  Object.entries(data.radios).forEach(([name, value]) => {
+   const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+   if (radio) {
+    radio.checked = true;
+    if (name === 'm5_research') toggleSection('researchSection', value === 'yes');
+    if (name === 'm5_publicity') toggleSection('publicitySection', value === 'yes');
+   }
+  });
+ }
+
+ const universityVal = document.getElementById('university')?.value;
+ if (universityVal === '__OTHER__') {
+  document.getElementById('otherUniversityWrap').style.display = 'block';
+ }
+
+ restoreDynamicItems(data);
+
+ if (data.currentPage && data.currentPage >= 1 && data.currentPage <= 3) {
+  currentPage = data.currentPage;
+  showPage(currentPage);
+  updateProgress();
+ }
+}
+
+function restoreDynamicItems(data) {
+ if (data.research && data.research.length > 0) {
+  const researchRadio = document.querySelector('input[name="m5_research"][value="yes"]');
+  if (researchRadio) {
+   researchRadio.checked = true;
+   toggleSection('researchSection', true);
+  }
+  researchItems = [];
+  data.research.forEach(item => addResearchItem(item));
+ }
+
+ if (data.publicity && data.publicity.length > 0) {
+  const publicityRadio = document.querySelector('input[name="m5_publicity"][value="yes"]');
+  if (publicityRadio) {
+   publicityRadio.checked = true;
+   toggleSection('publicitySection', true);
+  }
+  publicityItems = [];
+  data.publicity.forEach(item => addPublicityItem(item));
+ }
+
+ if (data.plannedCount !== undefined) {
+  const countEl = document.getElementById('plannedCount');
+  countEl.value = data.plannedCount;
+  generatePlannedActivities();
+  if (data.planned) {
+   document.querySelectorAll('.planned-item').forEach(item => {
+    const idx = item.dataset.index;
+    const d = data.planned[idx];
+    if (d) {
+     const dateEl = item.querySelector('.p-date');
+     const nameEl = item.querySelector('.p-name');
+     const locEl = item.querySelector('.p-location');
+     const orgEl = item.querySelector('.p-organizer');
+     const introEl = item.querySelector('.p-intro');
+     if (dateEl) dateEl.value = d.date || '';
+     if (nameEl) nameEl.value = d.name || '';
+     if (locEl) locEl.value = d.location || '';
+     if (orgEl) orgEl.value = d.organizer || '';
+     if (introEl) introEl.value = d.intro || '';
+    }
+   });
+  }
+ }
+
+ if (data.reportCount !== undefined) {
+  const countEl = document.getElementById('reportCount');
+  countEl.value = data.reportCount;
+  generateReportActivities();
+  if (data.reports) {
+   document.querySelectorAll('.report-item').forEach(item => {
+    const idx = item.dataset.index;
+    const d = data.reports[idx];
+    if (d) {
+     const titleEl = item.querySelector('.r-title');
+     const dateEl = item.querySelector('.r-date');
+     const platEl = item.querySelector('.r-platform');
+     const urlEl = item.querySelector('.r-url');
+     const sumEl = item.querySelector('.r-summary');
+     if (titleEl) titleEl.value = d.title || '';
+     if (dateEl) dateEl.value = d.date || '';
+     if (platEl) platEl.value = d.platform || '';
+     if (urlEl) urlEl.value = d.url || '';
+     if (sumEl) sumEl.value = d.summary || '';
+    }
+   });
+  }
+ }
+}
+
+// 防抖保存
+document.addEventListener('input', function(e) {
+ if (e.target.closest('.form-input, .form-select, .form-textarea, input[type="radio"], input[type="number"]')) {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(autoSave, 500);
+ }
+});
+
+document.addEventListener('change', function(e) {
+ if (e.target.closest('.form-input, .form-select, .form-textarea, input[type="radio"], input[type="number"]')) {
+  clearTimeout(debounceTimer);
+  autoSave();
+ }
+});
+
+// 页面离开前立即保存
+window.addEventListener('beforeunload', function() {
+ autoSave();
+});
+
+// 每30秒自动保存
+setInterval(autoSave, 30000);
+
+// ========== 拖拽上传 ==========
+document.addEventListener('DOMContentLoaded', () => {
+ // 清除错误样式
+ document.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => {
+ el.addEventListener('input', function() {
+ this.classList.remove('error');
+ });
+ });
+});
+</script>
