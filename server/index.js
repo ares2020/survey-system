@@ -85,6 +85,11 @@ app.get('/health', (req, res) => {
   });
 });
 
+// 版本确认端点
+app.get('/version', (req, res) => {
+  res.json({ version: '2026-05-30-v2', build: 'P0-P3-fix' });
+});
+
 // 404 - must return JSON, never HTML
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Not found', path: req.path });
