@@ -69,6 +69,12 @@ function capPageSize(val) {
   return Math.min(n, 100);
 }
 
+function validatePage(val) {
+  const n = parseInt(val, 10);
+  if (isNaN(n) || n < 1) return { valid: false, value: 1, error: 'page 必须是大于等于 1 的整数' };
+  return { valid: true, value: n };
+}
+
 // ========== XSS 转义（仅用于后端回显输出，不入库） ==========
 function escapeHtml(str) {
   if (str === null || str === undefined) return str;
@@ -162,8 +168,8 @@ function validateBody(body) {
   const m2 = body.module2 || {};
   const m4 = body.module4 || {};
   if (m1.provinceLecture && String(m1.provinceLecture).length > 500) errors.push('省级宣讲描述不能超过500字');
-  if (m4.nat?.desc && String(m4.nat.desc).length > 500) errors.push('国赛孵化描述不能超过500字');
-  if (m4.prov?.desc && String(m4.prov.desc).length > 500) errors.push('省赛孵化描述不能超过500字');
+  if (m4.national?.desc && String(m4.national.desc).length > 500) errors.push('国赛孵化描述不能超过500字');
+  if (m4.provincial?.desc && String(m4.provincial.desc).length > 500) errors.push('省赛孵化描述不能超过500字');
   if (m4.cityShop && String(m4.cityShop).length > 500) errors.push('城市青春小店描述不能超过500字');
   const m5 = body.module5 || {};
   if (m5.research) {
@@ -652,7 +658,8 @@ router.get('/admin/stats', authenticate, (req, res) => {
 router.get('/admin/submissions', authenticate, (req, res) => {
   try {
     const db = getDb();
-    const page = parseInt(req.query.page) || 1;
+    const pageCheck = validatePage(req.query.page);
+    const page = pageCheck.value;
     const pageSize = capPageSize(req.query.pageSize);
 
     // 只显示未删除的记录
@@ -684,7 +691,7 @@ router.get('/admin/submissions', authenticate, (req, res) => {
     res.json({
       success: true,
       data: escapedData,
-      pagination: { page, pageSize, total }
+      pagination: { page, pageSize, total, pageValid: pageCheck.valid }
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -695,7 +702,8 @@ router.get('/admin/submissions', authenticate, (req, res) => {
 router.get('/admin/submissions/deleted', authenticate, (req, res) => {
   try {
     const db = getDb();
-    const page = parseInt(req.query.page) || 1;
+    const pageCheck = validatePage(req.query.page);
+    const page = pageCheck.value;
     const pageSize = capPageSize(req.query.pageSize);
 
     let list = db.submissions.filter(s => s.deleted).sort((a, b) => b.id - a.id);
@@ -711,7 +719,7 @@ router.get('/admin/submissions/deleted', authenticate, (req, res) => {
     res.json({
       success: true,
       data,
-      pagination: { page, pageSize, total }
+      pagination: { page, pageSize, total, pageValid: pageCheck.valid }
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -1000,7 +1008,8 @@ router.get('/admin/audit-logs', authenticate, async (req, res) => {
       });
     }
 
-    const page = parseInt(req.query.page) || 1;
+    const pageCheck = validatePage(req.query.page);
+    const page = pageCheck.value;
     const pageSize = capPageSize(req.query.pageSize);
     const action = req.query.action;
 

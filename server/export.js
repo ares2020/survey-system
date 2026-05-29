@@ -82,7 +82,9 @@ function buildStatsSheet(startDate, endDate) {
   // ===== 汇总各项数据 =====
 
   // --- 省级宣讲 ---
-  const provincialDesc = joinTexts(subs, 'q15_provincial_desc') || '—';
+  // 只取本周有宣讲活动的学校描述
+  const lectureActiveSubs = subs.filter(s => num(s.q8_weekly_lectures) > 0);
+  const provincialDesc = joinTexts(lectureActiveSubs, 'q15_provincial_desc') || '—';
 
   // --- 校级宣讲（累计开展X场，覆盖Y人次）---
   const culLectures = sum(subs, 'q10_cumul_lectures');
@@ -146,19 +148,23 @@ function buildStatsSheet(startDate, endDate) {
   const cityShopText = joinTexts(subs, 'q45_city_shops_desc') || '—';
 
   // --- 国赛获奖项目 ---
+  // 只取有国赛落地项目的学校描述
+  const natActiveSubs = subs.filter(s => num(s.q41_national_landings) > 0);
   const nLand   = sum(subs, 'q41_national_landings');
   const nComp   = sum(subs, 'q41_national_companies');
   const nTalent = sum(subs, 'q41_national_talents');
   const nFund   = sum(subs, 'q41_national_funds');
-  const nDesc   = joinTexts(subs, 'q42_national_desc');
+  const nDesc   = joinTexts(natActiveSubs, 'q42_national_desc');
   const nationalText = buildCompetitionText(nLand, nComp, nTalent, nFund, nDesc);
 
   // --- 省赛获奖项目 ---
+  // 只取有省赛落地项目的学校描述
+  const provActiveSubs = subs.filter(s => num(s.q43_provincial_landings) > 0);
   const pLand   = sum(subs, 'q43_provincial_landings');
   const pComp   = sum(subs, 'q43_provincial_companies');
   const pTalent = sum(subs, 'q43_provincial_talents');
   const pFund   = sum(subs, 'q43_provincial_funds');
-  const pDesc   = joinTexts(subs, 'q44_provincial_desc');
+  const pDesc   = joinTexts(provActiveSubs, 'q44_provincial_desc');
   const provincialText = buildCompetitionText(pLand, pComp, pTalent, pFund, pDesc);
 
   // --- 调研工作：收集所有调研条目 ---
@@ -358,7 +364,7 @@ function buildCompetitionText(landings, companies, talents, funds, desc) {
   if (landings > 0) parts.push(`落地${landings}个`);
   if (companies > 0) parts.push(`引入${companies}家企业`);
   if (talents > 0) parts.push(`引入${talents}名人才`);
-  if (funds > 0) parts.push(`引入${funds}万元资金`);
+  if (funds > 0) parts.push(`引入${Number(funds).toFixed(2)}万元资金`);
 
   let text = parts.length ? parts.join('，') : '（未填）';
   if (desc) {
