@@ -52,6 +52,23 @@ function recordLoginAttempt(ip, success) {
   }
 }
 
+const SQL_KEYWORDS = ['DROP', 'TABLE', 'DELETE', 'INSERT', 'UPDATE', 'SELECT', 'UNION', 'EXEC', 'SCRIPT', 'ALTER', 'CREATE', 'TRUNCATE'];
+function sanitizeSql(text) {
+  if (!text || typeof text !== 'string') return text;
+  let result = text;
+  for (const keyword of SQL_KEYWORDS) {
+    const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+    result = result.replace(regex, `[${keyword}]`);
+  }
+  return result;
+}
+
+function capPageSize(val) {
+  const n = parseInt(val, 10);
+  if (isNaN(n) || n < 1) return 10;
+  return Math.min(n, 100);
+}
+
 // ========== XSS 转义（仅用于后端回显输出，不入库） ==========
 function escapeHtml(str) {
   if (str === null || str === undefined) return str;
@@ -64,10 +81,10 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-/** 仅做 trim，不做 HTML 转义 —— 入库时保留原始字符 */
+/** trim + SQL sanitize —— 入库前处理，避免触发 Cloudflare WAF */
 function cleanString(val) {
   if (val === null || val === undefined) return '';
-  return String(val).trim();
+  return sanitizeSql(String(val).trim());
 }
 
 /** 安全解析数字，无效或负数时返回 0（默认最小值为0） */
@@ -636,7 +653,7 @@ router.get('/admin/submissions', authenticate, (req, res) => {
   try {
     const db = getDb();
     const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 10;
+    const pageSize = capPageSize(req.query.pageSize);
 
     // 只显示未删除的记录
     let list = db.submissions.filter(s => !s.deleted).sort((a, b) => b.id - a.id);
@@ -679,7 +696,7 @@ router.get('/admin/submissions/deleted', authenticate, (req, res) => {
   try {
     const db = getDb();
     const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 10;
+    const pageSize = capPageSize(req.query.pageSize);
 
     let list = db.submissions.filter(s => s.deleted).sort((a, b) => b.id - a.id);
 
@@ -984,7 +1001,7 @@ router.get('/admin/audit-logs', authenticate, async (req, res) => {
     }
 
     const page = parseInt(req.query.page) || 1;
-    const pageSize = parseInt(req.query.pageSize) || 20;
+    const pageSize = capPageSize(req.query.pageSize);
     const action = req.query.action;
 
     const filter = {};

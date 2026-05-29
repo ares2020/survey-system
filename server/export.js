@@ -15,13 +15,19 @@ function sum(items, field) {
   return items.reduce((s, item) => s + num(item[field]), 0);
 }
 
-/** 收集所有非空文本，用分号分隔，最多取 maxItems 条 */
+/** 收集所有非空文本，用分号分隔，最多取 maxItems 条；过滤占位符 */
 function joinTexts(items, field, maxItems = 3) {
-  const texts = items.map(it => it[field]).filter(t => t && String(t).trim()).map(t => String(t).trim());
+  const PLACEHOLDERS = ['无', '无。', '（未填）', '—', '-', '暂无'];
+  const texts = items
+    .map(it => it[field])
+    .filter(t => t && String(t).trim())
+    .map(t => String(t).trim())
+    .filter(t => !PLACEHOLDERS.includes(t));
   if (!texts.length) return '';
-  // 取最多 maxItems 条
-  const selected = texts.slice(0, maxItems);
-  return selected.join('；') + (texts.length > maxItems ? ` 等${texts.length}条` : '');
+  // 去重
+  const unique = [...new Set(texts)];
+  const selected = unique.slice(0, maxItems);
+  return selected.join('；') + (unique.length > maxItems ? ` 等${unique.length}条` : '');
 }
 
 /** 数字转描述文本，0/空值返回 '（未填）' */
@@ -160,11 +166,18 @@ function buildStatsSheet(startDate, endDate) {
   const publicityList = [];
   for (const sub of subs) {
     for (const item of sub.research_items || []) {
-      if (item.name) researchList.push(`【${sub.school_name}】${item.name}`);
+      const name = item.name || item.item_name || '';
+      const trimmed = name.trim();
+      if (trimmed && trimmed !== '无' && trimmed !== '无。') {
+        researchList.push(`【${sub.school_name}】${trimmed}`);
+      }
     }
     for (const item of sub.publicity_items || []) {
-      const activity = item.activityName || item.name || '';
-      if (activity) publicityList.push(`【${sub.school_name}】${activity}`);
+      const activity = item.activity_name || item.name || '';
+      const trimmed = activity.trim();
+      if (trimmed && trimmed !== '无' && trimmed !== '无。') {
+        publicityList.push(`【${sub.school_name}】${trimmed}`);
+      }
     }
   }
 
