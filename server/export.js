@@ -77,7 +77,7 @@ function buildStatsSheet(startDate, endDate) {
 
   // 当前日期字符串
   const now = new Date();
-  const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+  const dateStr = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2, '0')}月${String(now.getDate()).padStart(2, '0')}日`;
 
   // ===== 汇总各项数据 =====
 
@@ -264,9 +264,7 @@ function buildStatsSheet(startDate, endDate) {
 
     // --- 大学生就业引航计划 ---
     { s: { r: 3, c: 0 }, e: { r: 5, c: 0 } },   // A4:A6
-    { s: { r: 3, c: 3 }, e: { r: 3, c: 4 } },   // D4:E4
     { s: { r: 4, c: 1 }, e: { r: 4, c: 2 } },   // B5:C5
-    { s: { r: 4, c: 3 }, e: { r: 4, c: 4 } },   // D5:E5
 
     // --- 千校万岗 ---
     { s: { r: 6, c: 0 }, e: { r: 8, c: 0 } },   // A7:A9
@@ -285,8 +283,6 @@ function buildStatsSheet(startDate, endDate) {
     { s: { r: 12, c: 0 }, e: { r: 14, c: 0 } }, // A13:A15
     { s: { r: 12, c: 1 }, e: { r: 12, c: 2 } }, // B13:C13
     { s: { r: 12, c: 3 }, e: { r: 12, c: 4 } }, // D13:E13
-    { s: { r: 13, c: 1 }, e: { r: 13, c: 2 } }, // B14:C14
-    { s: { r: 13, c: 3 }, e: { r: 13, c: 4 } }, // D14:E14
 
     // --- 其他有关工作 ---
     { s: { r: 15, c: 0 }, e: { r: 17, c: 0 } }, // A16:A18
@@ -587,10 +583,7 @@ export function exportUnsubmittedExcel(weekStart, weekEnd, unsubmittedList = nul
 
   // 当前时间
   const now = new Date();
-  const timeStr = now.toLocaleString('zh-CN', {
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit'
-  });
+  const timeStr = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2, '0')}月${String(now.getDate()).padStart(2, '0')}日 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
   // ===== 构建 Sheet 数据 =====
   const rows = [];

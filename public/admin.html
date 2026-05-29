@@ -885,8 +885,9 @@ if (tr) tr.classList.add('expanded');
 showLoading();
 try {
 const res = await apiFetch('/api/admin/submissions/' + id);
-const data = await res.json();
-renderDetailRow(tr, data);
+const result = await res.json();
+const itemData = result.data || result;
+renderDetailRow(tr, itemData);
 } catch(err) {
 showToast('加载详情失败: ' + err.message, 'error');
 } finally {
@@ -1220,7 +1221,7 @@ btn.disabled = false;
 
 window.exportRawData = async function() {
 try {
-const token = localStorage.getItem('adminToken');
+const token = getToken();
 const res = await fetch('/api/admin/export/raw', {
 headers: { 'Authorization': 'Bearer ' + token }
 });
