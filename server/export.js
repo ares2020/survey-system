@@ -130,7 +130,11 @@ async function buildStatsSheet(startDate, endDate) {
     if (provincialText) provincialText += '；';
     provincialText += `累计开展${cProvLectures || 0}场，覆盖${cProvReach || 0}人次`;
   }
-  if (!provincialText) provincialText = '—';
+  if (!provincialText) {
+    // 如果没有新字段数据，回退到旧描述
+    const lectureActiveSubs = subs.filter(s => num(s.q8_weekly_lectures) > 0);
+    provincialText = joinTexts(lectureActiveSubs, 'q15_provincial_desc') || '—';
+  }
   // 保留描述作为参考（如果需要）
   const lectureActiveSubs = subs.filter(s => num(s.q8_weekly_lectures) > 0);
   const provincialDesc = joinTexts(lectureActiveSubs, 'q15_provincial_desc') || '—';
