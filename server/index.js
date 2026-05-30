@@ -83,13 +83,15 @@ app.get('/', (req, res) => { res.sendFile(path.join(publicPath, 'index.html')); 
 // Health check + data status
 app.get('/health', (req, res) => {
   const db = getDb();
+  const mongoStatus = useMongo();
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     dataDir: process.env.DATA_DIR || 'default',
     dataFile: DATA_FILE,
     records: db.submissions?.length || 0,
-    mongo: useMongo(),
+    mongo: mongoStatus,
+    mongoUri: process.env.MONGODB_URI ? 'configured' : 'not configured',
     version: 'v19-test'
   });
 });
