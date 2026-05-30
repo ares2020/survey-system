@@ -631,12 +631,13 @@ router.get('/admin/stats', authenticate, async (req, res) => {
       return subDate >= monday && subDate <= sunday;
     });
 
-    // 所有已提交的高校名（去重，只考虑未删除）
-    const submittedSchools = [...new Set(
+    // 所有已提交的高校名（去重，只考虑未删除，且只统计在 SCHOOLS 列表中的）
+    const allSubmittedSchools = [...new Set(
       activeSubmissions.filter(s => s.school_name && s.school_name.trim()).map(s => s.school_name.trim())
     )];
+    const submittedSchools = allSubmittedSchools.filter(s => SCHOOLS.includes(s));
 
-    // 未提交高校
+    // 未提交高校（基于 SCHOOLS 列表）
     const unsubmitted = SCHOOLS.filter(s => !submittedSchools.includes(s));
 
     // 计算最近7周趋势

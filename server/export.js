@@ -65,9 +65,12 @@ async function getLatestSubs(startDate, endDate) {
     if (sub.deleted) continue;
     // 日期过滤
     if (startDate || endDate) {
-      const subDate = sub.submitted_at ? String(sub.submitted_at).substring(0, 10) : '';
-      if (startDate && subDate < startDate) continue;
-      if (endDate && subDate > endDate) continue;
+      const subDateStr = sub.submitted_at ?
+        (sub.submitted_at instanceof Date ?
+          sub.submitted_at.toISOString().substring(0, 10) :
+          String(sub.submitted_at).substring(0, 10)) : '';
+      if (startDate && subDateStr < startDate) continue;
+      if (endDate && subDateStr > endDate) continue;
     }
     const existing = map.get(sub.school_name);
     const subDate = sub.submitted_at ? new Date(sub.submitted_at) : new Date(0);
