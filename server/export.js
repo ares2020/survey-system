@@ -277,7 +277,7 @@ async function buildStatsSheet(startDate, endDate) {
     '就业观念引导\n主题团日活动情况'
   ]);
   rows.push(['', '场次及覆盖规模', '', '场次及覆盖规模', '场次']);
-  rows.push(['', provincialDesc, '', schoolLectureText, tuanriText]);
+  rows.push(['', provincialText, '', schoolLectureText, tuanriText]);
 
   // ---- Rows 6-8: 千校万岗 ----
   rows.push([
