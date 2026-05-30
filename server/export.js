@@ -335,14 +335,13 @@ async function buildStatsSheet(startDate, endDate) {
     { s: { r: 9, c: 0 }, e: { r: 11, c: 0 } },  // A10:A12
     { s: { r: 9, c: 1 }, e: { r: 9, c: 2 } },   // B10:C10
     { s: { r: 9, c: 3 }, e: { r: 9, c: 4 } },   // D10:E10
+    { s: { r: 11, c: 3 }, e: { r: 11, c: 4 } }, // D12:E12 (workplace experience data)
 
     // --- 创业带动就业 ---
     { s: { r: 12, c: 0 }, e: { r: 14, c: 0 } }, // A13:A15
     { s: { r: 12, c: 1 }, e: { r: 12, c: 2 } }, // B13:C13
     { s: { r: 12, c: 3 }, e: { r: 12, c: 4 } }, // D13:E13
-    { s: { r: 13, c: 1 }, e: { r: 13, c: 2 } }, // B14:C14
-    { s: { r: 13, c: 3 }, e: { r: 13, c: 4 } }, // D14:E14
-    // Row 15 data cells are NOT merged (B15, C15, D15, E15 separate)
+    // Row 14 and 15 are NOT merged (B14, C14, D14, E14 have separate content)
 
     // --- 其他有关工作 ---
     { s: { r: 15, c: 0 }, e: { r: 17, c: 0 } }, // A16:A18
