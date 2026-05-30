@@ -28,7 +28,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(s => s.trim()) : ['http://localhost:3001', 'https://survey-system-v19.onrender.com'];
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(s => s.trim()) : ['http://localhost:3001', 'https://survey-system-v19.onrender.com', 'https://survey-system-agtg.onrender.com'];
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
