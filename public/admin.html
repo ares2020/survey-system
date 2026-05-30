@@ -596,21 +596,21 @@ setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
 async function apiFetch(url, opts) {
-opts = opts || {};
-opts.headers = opts.headers || {};
-const token = getToken();
-if (token) opts.headers['Authorization'] = 'Bearer ' + token;
-if (!(opts.body instanceof FormData) && opts.body && typeof opts.body === 'object') {
-opts.headers['Content-Type'] = 'application/json';
-opts.body = JSON.stringify(opts.body);
-}
-const res = await fetch(API_BASE + url, opts);
-if (res.status === 401) {
-removeToken();
-showLogin();
-throw new Error('登录已过期，请重新登录');
-}
-return res;
+  opts = opts || {};
+  opts.headers = opts.headers || {};
+  const token = getToken();
+  if (token) opts.headers['Authorization'] = 'Bearer ' + token;
+  if (!(opts.body instanceof FormData) && opts.body && typeof opts.body === 'object') {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(opts.body);
+  }
+  const res = await fetch(API_BASE + url, opts);
+  if (res.status === 401 || res.status === 403) {
+    removeToken();
+    showLogin();
+    throw new Error('登录已过期，请重新登录');
+  }
+  return res;
 }
 
 function formatDate(dateStr) {
@@ -1220,23 +1220,27 @@ btn.disabled = false;
 });
 
 window.exportRawData = async function() {
-try {
-const token = getToken();
-const res = await fetch('/api/admin/export/raw', {
-headers: { 'Authorization': 'Bearer ' + token }
-});
-if (!res.ok) throw new Error('导出失败');
-const blob = await res.blob();
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = '原始数据_' + new Date().toISOString().slice(0, 10) + '.xlsx';
-a.click();
-URL.revokeObjectURL(url);
-showToast('原始数据导出成功');
-} catch (err) {
-showToast('导出失败: ' + err.message, 'error');
-}
+  showLoading();
+  try {
+    const res = await apiFetch('/api/admin/export/raw');
+    if (!res.ok) throw new Error('导出失败');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '原始数据_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('原始数据导出成功');
+  } catch (err) {
+    if (err.message.includes('登录已过期')) {
+      // 已由 apiFetch 处理跳转
+    } else {
+      showToast('导出失败: ' + err.message, 'error');
+    }
+  } finally {
+    hideLoading();
+  }
 };
 
 $('exportUnsubmittedBtn').addEventListener('click', async function() {
