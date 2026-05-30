@@ -444,12 +444,18 @@ function escapeSubmissionFields(item) {
 }
 
 // ========== 辅助：获取未提交高校列表（只考虑未删除记录） ==========
-function getUnsubmittedSchools() {
-  const db = getDb();
-  const submittedSchools = [...new Set(
-    db.submissions.filter(s => s.school_name && s.school_name.trim() && !s.deleted)
-      .map(s => s.school_name.trim())
-  )];
+async function getUnsubmittedSchools() {
+  let submittedSchools;
+  if (useMongo()) {
+    const docs = await Submission.find({ deleted: false }).distinct('school_name');
+    submittedSchools = docs.filter(Boolean).map(s => s.trim());
+  } else {
+    const db = getDb();
+    submittedSchools = [...new Set(
+      db.submissions.filter(s => s.school_name && s.school_name.trim() && !s.deleted)
+        .map(s => s.school_name.trim())
+    )];
+  }
   return SCHOOLS.filter(s => !submittedSchools.includes(s));
 }
 
@@ -1069,7 +1075,7 @@ router.get('/admin/audit-logs', authenticate, async (req, res) => {
 router.get('/admin/export', authenticate, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    const buffer = exportToExcel(startDate, endDate);
+    const buffer = await exportToExcel(startDate, endDate);
 
     // 审计日志
     logAudit({
@@ -1094,8 +1100,8 @@ router.get('/admin/export/unsubmitted', authenticate, async (req, res) => {
     if (!weekStart || !weekEnd) {
       return res.status(400).json({ success: false, message: 'Missing weekStart or weekEnd' });
     }
-    const unsubmitted = getUnsubmittedSchools();
-    const buffer = exportUnsubmittedExcel(weekStart, weekEnd, unsubmitted);
+    const unsubmitted = await getUnsubmittedSchools();
+    const buffer = await exportUnsubmittedExcel(weekStart, weekEnd, unsubmitted);
 
     // 审计日志
     logAudit({
@@ -1117,7 +1123,7 @@ router.get('/admin/export/unsubmitted', authenticate, async (req, res) => {
 router.get('/admin/export/raw', authenticate, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
-    const buffer = exportRawData(startDate, endDate);
+    const buffer = await exportRawData(startDate, endDate);
 
     // 审计日志
     logAudit({

@@ -1,6 +1,7 @@
 import xlsx from 'xlsx';
 import { SCHOOLS } from './constants.js';
-import { getDb } from './db.js';
+import { getDb, useMongo } from './db.js';
+import { Submission } from './models.js';
 
 // ==================== 工具函数 ====================
 
@@ -40,20 +41,38 @@ function desc(value, prefix = '', suffix = '') {
 }
 
 /** 获取每个学校的最新提交记录，支持按提交日期范围过滤（过滤软删除） */
-function getLatestSubs(startDate, endDate) {
-  const db = getDb();
+async function getLatestSubs(startDate, endDate) {
+  let submissions;
+  if (useMongo()) {
+    const query = { deleted: false };
+    if (startDate || endDate) {
+      // 日期范围过滤在代码中处理
+    }
+    const docs = await Submission.find(query).lean();
+    submissions = docs.map(doc => {
+      const obj = { ...doc };
+      delete obj._id; delete obj.__v; delete obj.createdAt; delete obj.updatedAt;
+      return obj;
+    });
+  } else {
+    const db = getDb();
+    submissions = db.submissions;
+  }
+
   const map = new Map();
-  for (const sub of db.submissions) {
+  for (const sub of submissions) {
     // 过滤软删除记录
     if (sub.deleted) continue;
     // 日期过滤
     if (startDate || endDate) {
-      const subDate = sub.submitted_at ? sub.submitted_at.substring(0, 10) : '';
+      const subDate = sub.submitted_at ? String(sub.submitted_at).substring(0, 10) : '';
       if (startDate && subDate < startDate) continue;
       if (endDate && subDate > endDate) continue;
     }
     const existing = map.get(sub.school_name);
-    if (!existing || new Date(sub.submitted_at) > new Date(existing.submitted_at)) {
+    const subDate = sub.submitted_at ? new Date(sub.submitted_at) : new Date(0);
+    const existingDate = existing && existing.submitted_at ? new Date(existing.submitted_at) : new Date(0);
+    if (!existing || subDate > existingDate) {
       map.set(sub.school_name, sub);
     }
   }
@@ -61,9 +80,22 @@ function getLatestSubs(startDate, endDate) {
 }
 
 /** 筛选指定日期范围内的提交（过滤软删除） */
-function getSubsInPeriod(startDate, endDate) {
-  const db = getDb();
-  return db.submissions.filter(sub => {
+async function getSubsInPeriod(startDate, endDate) {
+  let submissions;
+  if (useMongo()) {
+    const query = { deleted: false };
+    const docs = await Submission.find(query).lean();
+    submissions = docs.map(doc => {
+      const obj = { ...doc };
+      delete obj._id; delete obj.__v; delete obj.createdAt; delete obj.updatedAt;
+      return obj;
+    });
+  } else {
+    const db = getDb();
+    submissions = db.submissions;
+  }
+
+  return submissions.filter(sub => {
     if (sub.deleted) return false;
     return sub.period_start >= startDate && sub.period_end <= endDate;
   });
@@ -71,9 +103,9 @@ function getSubsInPeriod(startDate, endDate) {
 
 // ==================== Sheet1: 数据统计 ====================
 
-function buildStatsSheet(startDate, endDate) {
+async function buildStatsSheet(startDate, endDate) {
   // 取每个学校的最新提交进行汇总（已过滤软删除）
-  const subs = getLatestSubs();
+  const subs = await getLatestSubs();
 
   // 当前日期字符串
   const now = new Date();
@@ -391,8 +423,19 @@ function buildCompetitionText(landings, companies, talents, funds, desc) {
 
 // ==================== Sheet2: 活动情况 ====================
 
-function buildActivitiesSheet(startDate, endDate) {
-  const db = getDb();
+async function buildActivitiesSheet(startDate, endDate) {
+  let submissions;
+  if (useMongo()) {
+    const docs = await Submission.find({ deleted: false }).lean();
+    submissions = docs.map(doc => {
+      const obj = { ...doc };
+      delete obj._id; delete obj.__v; delete obj.createdAt; delete obj.updatedAt;
+      return obj;
+    });
+  } else {
+    const db = getDb();
+    submissions = db.submissions;
+  }
   const rows = [];
 
   // Row 0: 标题
@@ -410,9 +453,9 @@ function buildActivitiesSheet(startDate, endDate) {
 
   // ===== 收集活动数据（过滤软删除） =====
   // 先按日期范围过滤提交记录，排除已软删除的
-  let submissions = db.submissions.filter(s => !s.deleted);
+  let filteredSubmissions = submissions.filter(s => !s.deleted);
   if (startDate || endDate) {
-    submissions = submissions.filter(sub => {
+    filteredSubmissions = filteredSubmissions.filter(sub => {
       const subDate = sub.submitted_at ? sub.submitted_at.substring(0, 10) : '';
       if (startDate && subDate < startDate) return false;
       if (endDate && subDate > endDate) return false;
@@ -423,7 +466,7 @@ function buildActivitiesSheet(startDate, endDate) {
   // 遍历过滤后的提交，按学校分组，将拟开展和已开展配对放在同一行
   let seq = 1;
 
-  for (const sub of submissions) {
+  for (const sub of filteredSubmissions) {
     const planned = sub.planned_activities || [];
     const completed = sub.completed_activities || [];
     const maxLen = Math.max(planned.length, completed.length);
@@ -497,9 +540,9 @@ function buildActivitiesSheet(startDate, endDate) {
  * @param {string} endDate - 结束日期 (YYYY-MM-DD)
  * @returns {Buffer} Excel 文件 Buffer
  */
-export function exportToExcel(startDate, endDate) {
-  const statsSheet = buildStatsSheet(startDate, endDate);
-  const activitiesSheet = buildActivitiesSheet(startDate, endDate);
+export async function exportToExcel(startDate, endDate) {
+  const statsSheet = await buildStatsSheet(startDate, endDate);
+  const activitiesSheet = await buildActivitiesSheet(startDate, endDate);
 
   const wb = xlsx.utils.book_new();
   xlsx.utils.book_append_sheet(wb, statsSheet, '数据统计');
@@ -520,10 +563,23 @@ export function exportToExcel(startDate, endDate) {
  */
 
 // 原始数据导出：不做聚合，每条记录完整导出（过滤软删除）
-export function exportRawData(startDate, endDate) {
-  const db = getDb();
+export async function exportRawData(startDate, endDate) {
+  let subs;
+  if (useMongo()) {
+    const query = { deleted: false };
+    const docs = await Submission.find(query).lean();
+    subs = docs.map(doc => {
+      const obj = { ...doc };
+      delete obj._id; delete obj.__v; delete obj.createdAt; delete obj.updatedAt;
+      return obj;
+    });
+  } else {
+    const db = getDb();
+    subs = db.submissions;
+  }
+
   // 过滤软删除记录
-  let subs = db.submissions.filter(s => !s.deleted);
+  subs = subs.filter(s => !s.deleted);
 
   // 日期过滤
   if (startDate) {
@@ -580,8 +636,7 @@ export function exportRawData(startDate, endDate) {
 }
 
 
-export function exportUnsubmittedExcel(weekStart, weekEnd, unsubmittedList = null) {
-  const db = getDb();
+export async function exportUnsubmittedExcel(weekStart, weekEnd, unsubmittedList = null) {
 
   let unsubmitted;
   if (unsubmittedList && Array.isArray(unsubmittedList)) {
@@ -590,10 +645,18 @@ export function exportUnsubmittedExcel(weekStart, weekEnd, unsubmittedList = nul
   } else {
     // 找出本周已提交的高校（排除软删除）
     const submittedSchools = new Set();
-    for (const sub of db.submissions) {
-      if (sub.deleted) continue;
-      if (sub.period_start === weekStart && sub.period_end === weekEnd) {
+    if (useMongo()) {
+      const docs = await Submission.find({ deleted: false, period_start: weekStart, period_end: weekEnd }).lean();
+      for (const sub of docs) {
         submittedSchools.add(sub.school_name);
+      }
+    } else {
+      const db = getDb();
+      for (const sub of db.submissions) {
+        if (sub.deleted) continue;
+        if (sub.period_start === weekStart && sub.period_end === weekEnd) {
+          submittedSchools.add(sub.school_name);
+        }
       }
     }
     // 未提交的高校列表
