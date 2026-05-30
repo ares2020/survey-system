@@ -464,11 +464,20 @@ input, select { font-family: inherit; font-size: 14px; }
 
 <!-- 回收站页 -->
 <div class="page-section" id="pageRecycleBin">
-<h2 class="page-title">🗑️ 回收站</h2>
+<h2 class="page-title">🗑️ 回收站
+  <button class="btn btn-danger btn-sm" onclick="window.clearRecycleBin()" style="margin-left: 16px; font-size: 13px;">⚠️ 一键清空回收站</button>
+</h2>
 <div class="table-container">
+<div id="recycleBatchBar" style="display:none; padding: 8px 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; margin-bottom: 12px;">
+<span id="recycleBatchCount" style="font-weight: 600; color: #dc2626;">已选 0 条</span>
+<button class="btn btn-danger btn-sm" onclick="window.batchDelete()" style="margin-left: 12px;">批量永久删除</button>
+<button class="btn btn-success btn-sm" onclick="window.batchRestore()" style="margin-left: 8px;">批量恢复</button>
+<button class="btn btn-sm" onclick="window.clearRecycleSelection()" style="margin-left: 8px; background: #f3f4f6;">取消选择</button>
+</div>
 <table class="data-table">
 <thead>
 <tr>
+<th style="width:40px"><input type="checkbox" id="recycleSelectAll" onclick="window.toggleRecycleSelectAll()"></th>
 <th>序号</th>
 <th>高校名称</th>
 <th>填报人</th>
@@ -1046,34 +1055,42 @@ $('batchCount').textContent = '已选 ' + allIds.length + ' 条（全部）';
 };
 
 window.batchDelete = async function() {
-let ids = [];
-if (window._selectAllMode && window._allSelectedIds) {
-ids = window._allSelectedIds;
-} else {
-ids = Array.from(document.querySelectorAll('.row-check:checked')).map(cb => parseInt(cb.value));
-}
-if (ids.length === 0) return;
-if (!confirm('确定删除选中的 ' + ids.length + ' 条记录吗？此操作不可恢复。')) return;
+  let ids = [];
+  // 优先检查回收站复选框
+  const recycleChecks = document.querySelectorAll('.recycle-check:checked');
+  if (recycleChecks.length > 0) {
+    ids = Array.from(recycleChecks).map(cb => parseInt(cb.value));
+  } else if (window._selectAllMode && window._allSelectedIds) {
+    ids = window._allSelectedIds;
+  } else {
+    ids = Array.from(document.querySelectorAll('.row-check:checked')).map(cb => parseInt(cb.value));
+  }
+  if (ids.length === 0) return;
+  if (!confirm('确定删除选中的 ' + ids.length + ' 条记录吗？此操作不可恢复。')) return;
 
-showLoading();
-try {
-let success = 0, failed = 0;
-for (const id of ids) {
-try {
-const res = await apiFetch('/api/admin/submissions/' + id, { method: 'DELETE' });
-if (res.ok) success++;
-else failed++;
-} catch(e) { failed++; }
-}
-showToast('删除完成：成功 ' + success + ' 条' + (failed > 0 ? '，失败 ' + failed + ' 条' : ''));
-expandedRowId = null;
-clearSelection();
-loadSubmissions();
-} catch(err) {
-showToast('批量删除失败: ' + err.message, 'error');
-} finally {
-hideLoading();
-}
+  showLoading();
+  try {
+    const res = await apiFetch('/api/admin/submissions/batch-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast(result.message || '批量删除完成');
+    } else {
+      showToast('批量删除失败: ' + (result.message || ''), 'error');
+    }
+    expandedRowId = null;
+    clearSelection();
+    clearRecycleSelection();
+    loadSubmissions();
+    loadRecycleBin();
+  } catch(err) {
+    showToast('批量删除失败: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+  }
 };
 
 $('searchBtn').addEventListener('click', () => { currentPage = 1; expandedRowId = null; loadSubmissions(); });
@@ -1355,6 +1372,7 @@ const seq = (recycleBinPage - 1) * pageSize + idx + 1;
 const tr = document.createElement('tr');
 tr.setAttribute('data-id', item.id);
 tr.innerHTML =
+'<td><input type="checkbox" class="recycle-check" value="' + item.id + '" onchange="window.updateRecycleSelection()"></td>' +
 '<td>' + seq + '</td>' +
 '<td>' + escapeHtml(item.school_name || '-') + '</td>' +
 '<td>' + escapeHtml(item.reporter_name || '-') + '</td>' +
@@ -1422,6 +1440,81 @@ showToast(data.message || '删除失败', 'error');
 }
 } catch(err) {
 showToast('删除失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+};
+
+// ========== 回收站批量操作 ==========
+window.updateRecycleSelection = function() {
+const checked = document.querySelectorAll('.recycle-check:checked');
+const bar = $('recycleBatchBar');
+if (checked.length > 0) {
+bar.style.display = 'block';
+$('recycleBatchCount').textContent = '已选 ' + checked.length + ' 条';
+} else {
+bar.style.display = 'none';
+}
+};
+
+window.toggleRecycleSelectAll = function() {
+const all = document.querySelectorAll('.recycle-check');
+const checked = document.querySelectorAll('.recycle-check:checked');
+const isAll = all.length === checked.length;
+document.querySelectorAll('.recycle-check').forEach(cb => cb.checked = !isAll);
+$('recycleSelectAll').checked = !isAll;
+updateRecycleSelection();
+};
+
+window.clearRecycleSelection = function() {
+document.querySelectorAll('.recycle-check').forEach(cb => cb.checked = false);
+$('recycleSelectAll').checked = false;
+const bar = $('recycleBatchBar');
+if (bar) bar.style.display = 'none';
+};
+
+window.batchRestore = async function() {
+const ids = Array.from(document.querySelectorAll('.recycle-check:checked')).map(cb => parseInt(cb.value));
+if (ids.length === 0) return;
+if (!confirm('确定恢复选中的 ' + ids.length + ' 条记录吗？')) return;
+
+showLoading();
+try {
+let success = 0, failed = 0;
+for (const id of ids) {
+try {
+const res = await apiFetch('/api/admin/submissions/' + id + '/restore', { method: 'POST' });
+if (res.ok) success++;
+else failed++;
+} catch(e) { failed++; }
+}
+showToast('恢复完成：成功 ' + success + ' 条' + (failed > 0 ? '，失败 ' + failed + ' 条' : ''));
+clearRecycleSelection();
+loadRecycleBin();
+loadSubmissions();
+} catch(err) {
+showToast('批量恢复失败: ' + err.message, 'error');
+} finally {
+hideLoading();
+}
+};
+
+window.clearRecycleBin = async function() {
+if (!confirm('⚠️ 确定要清空回收站吗？所有回收站中的记录将被永久删除，不可恢复！')) return;
+if (!confirm('再次确认：此操作不可撤销，确定清空？')) return;
+
+showLoading();
+try {
+const res = await apiFetch('/api/admin/recycle-bin/clear', { method: 'DELETE' });
+const result = await res.json();
+if (result.success) {
+showToast(result.message || '回收站已清空');
+loadRecycleBin();
+} else {
+showToast(result.message || '清空失败', 'error');
+}
+} catch(err) {
+showToast('清空回收站失败: ' + err.message, 'error');
 } finally {
 hideLoading();
 }
