@@ -8,9 +8,26 @@ import { Submission, Admin, AuditLog } from './db.js';
 
 const router = express.Router();
 
+// ========== WAF 预检中间件：拦截包含 SQL 关键字的请求 ==========
+router.use((req, res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    const hasSql = Object.values(req.body).some(v => {
+      if (typeof v === 'string') return containsSqlKeyword(v);
+      if (typeof v === 'object' && v !== null) {
+        return JSON.stringify(v).split(/["\s]/).some(part => containsSqlKeyword(part));
+      }
+      return false;
+    });
+    if (hasSql) {
+      return res.status(400).json({ success: false, message: '输入内容包含不允许的字符' });
+    }
+  }
+  next();
+});
+
 // ========== 登录限流 ==========
 const loginAttempts = new Map(); // ip -> {count, lastAttempt}
-const MAX_LOGIN_ATTEMPTS = 5;
+const MAX_LOGIN_ATTEMPTS = 10;
 const LOGIN_LOCKOUT_MS = 15 * 60 * 1000; // 15分钟
 
 /** 从请求中获取客户端真实IP（支持 Render 等代理环境的 x-forwarded-for） */
@@ -63,7 +80,21 @@ function sanitizeSql(text) {
   return result;
 }
 
+function containsSqlKeyword(text) {
+  if (!text || typeof text !== 'string') return false;
+  const upper = text.toUpperCase();
+  return SQL_KEYWORDS.some(kw => {
+    const regex = new RegExp(`\\b${kw}\\b`, 'i');
+    return regex.test(text);
+  });
 function capPageSize(val) {
+  const n = parseInt(val, 10);
+  if (isNaN(n) || n < 1) return 10;
+  return Math.min(n, 100);
+}
+
+}
+
   const n = parseInt(val, 10);
   if (isNaN(n) || n < 1) return 10;
   return Math.min(n, 100);

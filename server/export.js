@@ -108,7 +108,7 @@ async function getSubsInPeriod(startDate, endDate) {
 
 async function buildStatsSheet(startDate, endDate) {
   // 取每个学校的最新提交进行汇总（已过滤软删除）
-  const subs = await getLatestSubs();
+  const subs = await getLatestSubs(startDate, endDate);
 
   // 当前日期字符串
   const now = new Date();
@@ -180,10 +180,16 @@ async function buildStatsSheet(startDate, endDate) {
   const wExpReach    = sum(subs, 'q35_exp_reach');
   const cExpSessions = sum(subs, 'q36_cumul_exp_sessions');
   const cExpReach    = sum(subs, 'q37_cumul_exp_reach');
-  // 按照模板格式：累计开展X场，覆盖Y人次。
-  const expText = (cExpSessions > 0 || cExpReach > 0)
-    ? `累计开展${cExpSessions || 0}场，覆盖${cExpReach || 0}人次。`
-    : '—';
+  // 按照模板格式：本周X场，覆盖Y人次；累计开展X场，覆盖Y人次。
+  let expText = '';
+  if (wExpSessions > 0 || wExpReach > 0) {
+    expText += `本周${wExpSessions || 0}场，覆盖${wExpReach || 0}人次`;
+  }
+  if (cExpSessions > 0 || cExpReach > 0) {
+    if (expText) expText += '；';
+    expText += `累计开展${cExpSessions || 0}场，覆盖${cExpReach || 0}人次`;
+  }
+  if (!expText) expText = '—';
 
   // --- 青春小店：高校 ---
   const newShops      = sum(subs, 'q38_new_shops');
