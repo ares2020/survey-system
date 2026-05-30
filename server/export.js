@@ -158,8 +158,9 @@ async function buildStatsSheet(startDate, endDate) {
   const recruitText = (wRecruit > 0 || cRecruit > 0)
     ? `本周${wRecruit || 0}场；累计${cRecruit || 0}场`
     : '—';
-  const companiesText = (wCompanies > 0 || wJobs > 0 || cCompanies > 0 || cJobs > 0)
-    ? `本周：参与${wCompanies || 0}家企业，提供${wJobs || 0}个岗位\n累计：参与${cCompanies || 0}家企业，提供${cJobs || 0}个岗位`
+  // 按照模板格式：累计参与企业数（岗位数）
+  const companiesText = (cCompanies > 0 || cJobs > 0)
+    ? `${cCompanies || 0}家（${cJobs || 0}个岗位）`
     : '—';
 
   // --- 政务实习 ---
@@ -179,26 +180,25 @@ async function buildStatsSheet(startDate, endDate) {
   const wExpReach    = sum(subs, 'q35_exp_reach');
   const cExpSessions = sum(subs, 'q36_cumul_exp_sessions');
   const cExpReach    = sum(subs, 'q37_cumul_exp_reach');
-  const expSessionText = (wExpSessions > 0 || cExpSessions > 0)
-    ? `本周${wExpSessions || 0}场；累计${cExpSessions || 0}场`
-    : '—';
-  const expReachText = (wExpReach > 0 || cExpReach > 0)
-    ? `本周${wExpReach || 0}人；累计${cExpReach || 0}人`
+  // 按照模板格式：累计开展X场，覆盖Y人次。
+  const expText = (cExpSessions > 0 || cExpReach > 0)
+    ? `累计开展${cExpSessions || 0}场，覆盖${cExpReach || 0}人次。`
     : '—';
 
   // --- 青春小店：高校 ---
   const newShops      = sum(subs, 'q38_new_shops');
   const culShops      = sum(subs, 'q39_cumul_shops');
   const culShopStu    = sum(subs, 'q40_cumul_students');
-  const campusShopText = (newShops > 0 || culShops > 0 || culShopStu > 0)
-    ? `本周新增${newShops || 0}个；累计${culShops || 0}个；带动就业${culShopStu || 0}人`
+  // 按照模板格式：高校"青春小店"X家（其中参与创业学生Y人）
+  const campusShopText = (culShops > 0 || culShopStu > 0)
+    ? `高校"青春小店"${culShops || 0}家（其中参与创业学生${culShopStu || 0}人）`
     : '—';
 
   // --- 青春小店：城市 ---
   const cityShopText = joinTexts(subs, 'q45_city_shops_desc') || '—';
 
   // --- 国赛获奖项目 ---
-  // 只取有国赛落地项目的学校描述
+  // 按照模板格式：项目落地X个，成立公司Y家，引进人才Z名，配套支持资金W万元。
   const natActiveSubs = subs.filter(s => num(s.q41_national_landings) > 0);
   const nLand   = sum(subs, 'q41_national_landings');
   const nComp   = sum(subs, 'q41_national_companies');
@@ -208,7 +208,6 @@ async function buildStatsSheet(startDate, endDate) {
   const nationalText = buildCompetitionText(nLand, nComp, nTalent, nFund, nDesc);
 
   // --- 省赛获奖项目 ---
-  // 只取有省赛落地项目的学校描述
   const provActiveSubs = subs.filter(s => num(s.q43_provincial_landings) > 0);
   const pLand   = sum(subs, 'q43_provincial_landings');
   const pComp   = sum(subs, 'q43_provincial_companies');
@@ -225,28 +224,26 @@ async function buildStatsSheet(startDate, endDate) {
       const name = item.name || item.item_name || '';
       const trimmed = name.trim();
       if (trimmed && trimmed !== '无' && trimmed !== '无。') {
-        researchList.push(`【${sub.school_name}】${trimmed}`);
+        researchList.push(`${trimmed}`);
       }
     }
     for (const item of sub.publicity_items || []) {
       const activity = item.activity_name || item.name || '';
       const trimmed = activity.trim();
       if (trimmed && trimmed !== '无' && trimmed !== '无。') {
-        publicityList.push(`【${sub.school_name}】${trimmed}`);
+        publicityList.push(`${trimmed}`);
       }
     }
   }
 
   // ===== 构建二维数组数据 =====
-  // 所有单元格必须填充，合并区域只需在左上角单元格放值，其余放空字符串
-
   const rows = [];
 
   // Row 0: 标题
-  rows.push(['2026年大学生就业服务工作信息统计表', '', '', '', '']);
+  rows.push(['2026年"共青团服务和促进大学生就业行动"工作信息统计表', '', '', '', '']);
 
   // Row 1: 省份+日期
-  rows.push([`省份：上海    数据截至：${dateStr}`, '', '', '', '']);
+  rows.push([`省份：上海                                                  数据截至：${dateStr}`, '', '', '', '']);
 
   // Row 2: 一级表头
   rows.push(['工作项目', '各项工作进展情况统计', '', '', '']);
@@ -265,7 +262,7 @@ async function buildStatsSheet(startDate, endDate) {
   // ---- Rows 6-8: 千校万岗 ----
   rows.push([
     '"千校万岗"系列招聘计划',
-    '各级团组织主办、联系的招聘活动及各级团组织联系的招聘岗位归集情况',
+    '各级团组织主办（含联合有关部门单位共同主办）的其他招聘活动情况（不包括"央企云招聘""就业有位来"活动）',
     '',
     '',
     ''
@@ -276,17 +273,17 @@ async function buildStatsSheet(startDate, endDate) {
   // ---- Rows 9-11: 大学生就业实习/扬帆计划 ----
   rows.push([
     "大学生就业实习\n'扬帆计划'",
-    '大学生就业实习岗位开发及实习学生上岗情况',
+    '大学生就业实习（含政务实习、企业实习）情况',
     '',
     '大学生职场体验活动情况',
     ''
   ]);
   rows.push(['', '政务实习情况', '企业实习情况', '场次', '覆盖规模']);
-  rows.push(['', govText, entText, expSessionText, expReachText]);
+  rows.push(['', govText, entText, expText, '']);
 
   // ---- Rows 12-14: 创业带动就业 ----
   rows.push(['创业带动就业*', '青春小店情况', '', '成果孵化转化情况', '']);
-  rows.push(['', '高校青春小店', '城市青春小店', '国赛获奖项目', '省赛获奖项目']);
+  rows.push(['', '高校"青春小店"', '城市"青春小店"', '国赛获奖项目\n孵化转化情况[2]', '省赛获奖项目\n孵化转化情况[2]']);
   rows.push(['', campusShopText, cityShopText, nationalText, provincialText]);
 
   // ---- Rows 15-17: 其他有关工作 ----
@@ -302,7 +299,7 @@ async function buildStatsSheet(startDate, endDate) {
 
   // Row 18: 备注
   rows.push([
-    '备注：\n1.“创业带动就业”为选填项；\n2.请于每周五12:00前提交本周工作信息。',
+    '备注：\n[1]省内高校宣讲活动覆盖率（%）=省内已开展校级宣讲活动高校数/省内高校总数；\n[2]国赛/省赛获奖项目孵化转化情况：填写各级团组织为国赛/省赛获奖项目链接的政策、资金、场地、资源情况以及支持的项目数量。\n[*]创业带动就业数据可双周更新，其余数据均按周更新。',
     '',
     '',
     '',
@@ -316,11 +313,15 @@ async function buildStatsSheet(startDate, endDate) {
     // 省份日期行
     { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
     // 一级表头
-    { s: { r: 2, c: 0 }, e: { r: 2, c: 1 } },
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 4 } },
 
     // --- 大学生就业引航计划 ---
     { s: { r: 3, c: 0 }, e: { r: 5, c: 0 } },   // A4:A6
+    { s: { r: 3, c: 1 }, e: { r: 3, c: 2 } },   // B4:C4
     { s: { r: 4, c: 1 }, e: { r: 4, c: 2 } },   // B5:C5
+    { s: { r: 4, c: 3 }, e: { r: 4, c: 4 } },   // D5:E5
+    { s: { r: 5, c: 1 }, e: { r: 5, c: 2 } },   // B6:C6
+    { s: { r: 5, c: 3 }, e: { r: 5, c: 4 } },   // D6:E6
 
     // --- 千校万岗 ---
     { s: { r: 6, c: 0 }, e: { r: 8, c: 0 } },   // A7:A9
@@ -339,11 +340,19 @@ async function buildStatsSheet(startDate, endDate) {
     { s: { r: 12, c: 0 }, e: { r: 14, c: 0 } }, // A13:A15
     { s: { r: 12, c: 1 }, e: { r: 12, c: 2 } }, // B13:C13
     { s: { r: 12, c: 3 }, e: { r: 12, c: 4 } }, // D13:E13
+    { s: { r: 13, c: 1 }, e: { r: 13, c: 2 } }, // B14:C14
+    { s: { r: 13, c: 3 }, e: { r: 13, c: 4 } }, // D14:E14
+    { s: { r: 14, c: 1 }, e: { r: 14, c: 2 } }, // B15:C15
+    { s: { r: 14, c: 3 }, e: { r: 14, c: 4 } }, // D15:E15
 
     // --- 其他有关工作 ---
     { s: { r: 15, c: 0 }, e: { r: 17, c: 0 } }, // A16:A18
     { s: { r: 15, c: 1 }, e: { r: 15, c: 2 } }, // B16:C16
     { s: { r: 15, c: 3 }, e: { r: 15, c: 4 } }, // D16:E16
+    { s: { r: 16, c: 1 }, e: { r: 16, c: 2 } }, // B17:C17
+    { s: { r: 16, c: 3 }, e: { r: 16, c: 4 } }, // D17:E17
+    { s: { r: 17, c: 1 }, e: { r: 17, c: 2 } }, // B18:C18
+    { s: { r: 17, c: 3 }, e: { r: 17, c: 4 } }, // D18:E18
 
     // --- 备注 ---
     { s: { r: 18, c: 0 }, e: { r: 18, c: 4 } }, // A19:E19
@@ -412,9 +421,9 @@ function buildInternText(wUnits, wJobs, wStu, cUnits, cJobs, cStu) {
 function buildCompetitionText(landings, companies, talents, funds, desc) {
   const parts = [];
   if (landings > 0) parts.push(`落地${landings}个`);
-  if (companies > 0) parts.push(`引入${companies}家企业`);
-  if (talents > 0) parts.push(`引入${talents}名人才`);
-  if (funds > 0) parts.push(`引入${Number(funds).toFixed(2)}万元资金`);
+  if (companies > 0) parts.push(`成立公司${companies}家`);
+  if (talents > 0) parts.push(`引进人才${talents}名`);
+  if (funds > 0) parts.push(`配套支持资金${Number(funds).toFixed(2)}万元`);
 
   let text = parts.length ? parts.join('，') : '（未填）';
   if (desc) {
@@ -422,7 +431,6 @@ function buildCompetitionText(landings, companies, talents, funds, desc) {
   }
   return text;
 }
-
 
 // ==================== Sheet2: 活动情况 ====================
 
@@ -442,7 +450,7 @@ async function buildActivitiesSheet(startDate, endDate) {
   const rows = [];
 
   // Row 0: 标题
-  rows.push(['2026年大学生就业服务工作活动情况统计表', '', '', '', '', '', '', '', '', '', '', '']);
+  rows.push(['2026年"共青团服务和促进大学生就业行动"活动信息统计表', '', '', '', '', '', '', '', '', '', '', '']);
 
   // Row 1: 二级表头（上级）
   rows.push(['序号', '省份', '拟开展活动', '', '', '', '', '已开展活动', '', '', '', '']);
@@ -486,7 +494,7 @@ async function buildActivitiesSheet(startDate, endDate) {
       rows.push([
         seq++,                                    // A 序号
         '上海',                                    // B 省份
-        p.date || p.activity_date || '',          // C 活动时间
+        p.activity_date || p.date || '',          // C 活动时间
         p.name || '',                             // D 活动名称
         p.location || '',                         // E 活动地点
         p.organizer || '',                        // F 主承办单位
@@ -500,34 +508,35 @@ async function buildActivitiesSheet(startDate, endDate) {
     }
   }
 
-  // 如果没有数据，加一行提示
-  if (rows.length <= 3) {
-    rows.push(['', '', '', '', '', '', '', '', '', '', '', '暂无数据']);
+  // 如果没有活动数据，添加空行提示
+  if (rows.length === 3) {
+    rows.push(['', '', '', '', '', '', '', '', '', '', '', '']);
   }
 
-  // ===== 合并单元格 (0-based) =====
+  // ===== 合并单元格定义 =====
   const merges = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } },  // A1:L1 标题
-    { s: { r: 1, c: 0 }, e: { r: 2, c: 0 } },   // A2:A3 序号
-    { s: { r: 1, c: 1 }, e: { r: 2, c: 1 } },   // B2:B3 省份
-    { s: { r: 1, c: 2 }, e: { r: 1, c: 6 } },   // C2:G2 拟开展活动
-    { s: { r: 1, c: 7 }, e: { r: 1, c: 11 } },  // H2:L2 已开展活动
+    // 标题行
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 11 } },
+    // 二级表头：拟开展活动 C1:G1
+    { s: { r: 1, c: 2 }, e: { r: 1, c: 6 } },
+    // 二级表头：已开展活动 H1:L1
+    { s: { r: 1, c: 7 }, e: { r: 1, c: 11 } },
   ];
 
   // ===== 列宽 =====
   const cols = [
     { wch: 6 },   // A 序号
-    { wch: 10 },  // B 省份
+    { wch: 8 },   // B 省份
     { wch: 14 },  // C 活动时间
     { wch: 28 },  // D 活动名称
-    { wch: 20 },  // E 活动地点
-    { wch: 20 },  // F 主承办单位
-    { wch: 36 },  // G 活动简介
+    { wch: 22 },  // E 活动地点
+    { wch: 22 },  // F 主承办单位
+    { wch: 40 },  // G 活动简介
     { wch: 28 },  // H 新闻标题
     { wch: 14 },  // I 推送时间
     { wch: 14 },  // J 推送平台
-    { wch: 30 },  // K 报道链接
-    { wch: 36 },  // L 活动摘要
+    { wch: 40 },  // K 报道链接
+    { wch: 40 },  // L 活动摘要
   ];
 
   const ws = xlsx.utils.aoa_to_sheet(rows);
@@ -537,38 +546,20 @@ async function buildActivitiesSheet(startDate, endDate) {
   return ws;
 }
 
+// ==================== 导出主函数 ====================
 
-// ==================== 主导出函数 ====================
-
-/**
- * 导出数据统计 + 活动情况 Excel
- * @param {string} startDate - 开始日期 (YYYY-MM-DD)
- * @param {string} endDate - 结束日期 (YYYY-MM-DD)
- * @returns {Buffer} Excel 文件 Buffer
- */
 export async function exportToExcel(startDate, endDate) {
-  const statsSheet = await buildStatsSheet(startDate, endDate);
-  const activitiesSheet = await buildActivitiesSheet(startDate, endDate);
-
   const wb = xlsx.utils.book_new();
+
+  const statsSheet = await buildStatsSheet(startDate, endDate);
   xlsx.utils.book_append_sheet(wb, statsSheet, '数据统计');
+
+  const activitiesSheet = await buildActivitiesSheet(startDate, endDate);
   xlsx.utils.book_append_sheet(wb, activitiesSheet, '活动情况');
 
-  return xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+  return xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
 }
 
-
-// ==================== 未提交高校导出 ====================
-
-/**
- * 导出本周未提交周报的高校清单（优化版）
- * @param {string} weekStart - 本周开始日期
- * @param {string} weekEnd - 本周结束日期
- * @param {string[]} unsubmittedList - 可选，外部传入的未提交高校列表（与stats一致）
- * @returns {Buffer} Excel 文件 Buffer
- */
-
-// 原始数据导出：不做聚合，每条记录完整导出（过滤软删除）
 export async function exportRawData(startDate, endDate) {
   let subs;
   if (useMongo()) {
@@ -581,161 +572,120 @@ export async function exportRawData(startDate, endDate) {
     });
   } else {
     const db = getDb();
-    subs = db.submissions;
+    subs = db.submissions.filter(s => !s.deleted);
   }
 
-  // 过滤软删除记录
-  subs = subs.filter(s => !s.deleted);
-
-  // 日期过滤
-  if (startDate) {
-    subs = subs.filter(s => {
-      const subDateStr = s.submitted_at ?
-        (s.submitted_at instanceof Date ?
-          s.submitted_at.toISOString().substring(0, 10) :
-          String(s.submitted_at).substring(0, 10)) : '';
-      return subDateStr >= startDate;
-    });
-  }
-  if (endDate) {
-    subs = subs.filter(s => {
-      const subDateStr = s.submitted_at ?
-        (s.submitted_at instanceof Date ?
-          s.submitted_at.toISOString().substring(0, 10) :
-          String(s.submitted_at).substring(0, 10)) : '';
-      return subDateStr <= endDate;
+  if (startDate || endDate) {
+    subs = subs.filter(sub => {
+      const subDateStr = sub.submitted_at ?
+        (sub.submitted_at instanceof Date ?
+          sub.submitted_at.toISOString().substring(0, 10) :
+          String(sub.submitted_at).substring(0, 10)) : '';
+      if (startDate && subDateStr < startDate) return false;
+      if (endDate && subDateStr > endDate) return false;
+      return true;
     });
   }
 
-  // 所有字段作为列
-  const headers = [
-    'ID', '高校名称', '填报人', '职务', '电话', '邮箱',
-    '周期开始', '周期结束', '提交时间',
-    '本周宣讲场次', '本周宣讲人次', '累计宣讲场次', '累计宣讲人次', '是否已开展引航', '本周团日场次', '累计团日场次', '省级宣讲',
-    '本周招聘场次', '本周企业数', '本周岗位数', '累计招聘场次', '累计企业数', '累计岗位数',
-    '政务实习本周单位', '政务实习本周岗位', '政务实习本周学生', '政务实习累计单位', '政务实习累计岗位', '政务实习累计学生',
-    '企业实习本周单位', '企业实习本周岗位', '企业实习本周学生', '企业实习累计单位', '企业实习累计岗位', '企业实习累计学生',
-    '职场体验本周场次', '职场体验本周人次', '职场体验累计场次', '职场体验累计人次',
-    '本周新增青春小店', '累计青春小店', '累计创业学生',
-    '国赛落地数', '国赛企业数', '国赛人才数', '国赛资金(万元)', '国赛描述',
-    '省赛落地数', '省赛企业数', '省赛人才数', '省赛资金(万元)', '省赛描述',
-    '城市青春小店',
-    '是否有调研', '是否有宣传',
-    '调研条目数', '宣传条目数', '拟开展活动数', '已开展活动数'
-  ];
+  const rows = subs.map(sub => ({
+    'ID': sub.id,
+    '高校名称': sub.school_name || '',
+    '填报人': sub.reporter_name || '',
+    '职务': sub.reporter_position || '',
+    '联系电话': sub.phone || '',
+    '邮箱': sub.email || '',
+    '统计周期': `${sub.period_start || ''} ~ ${sub.period_end || ''}`,
+    '提交时间': formatDate(sub.submitted_at),
+    '本周宣讲场次': sub.q8_weekly_lectures || 0,
+    '宣讲覆盖人次': sub.q9_weekly_reach || 0,
+    '累计宣讲场次': sub.q10_cumul_lectures || 0,
+    '累计覆盖人次': sub.q11_cumul_reach || 0,
+    '本周招聘场次': sub.q16_weekly_recruit || 0,
+    '参与企业数': sub.q17_weekly_companies || 0,
+    '提供岗位数': sub.q18_weekly_jobs || 0,
+    '政务实习单位': sub.q22_gov_units || 0,
+    '政务实习岗位': sub.q23_gov_jobs || 0,
+    '政务实习学生': sub.q24_gov_students || 0,
+    '企业实习单位': sub.q28_ent_units || 0,
+    '企业实习岗位': sub.q29_ent_jobs || 0,
+    '企业实习学生': sub.q30_ent_students || 0,
+    '职场体验场次': sub.q34_exp_sessions || 0,
+    '职场体验人次': sub.q35_exp_reach || 0,
+    '新增青春小店': sub.q38_new_shops || 0,
+    '累计青春小店': sub.q39_cumul_shops || 0,
+    '国赛落地项目': sub.q41_national_landings || 0,
+    '省赛落地项目': sub.q43_provincial_landings || 0,
+  }));
 
-  const rows = subs.map(s => [
-    s.id, s.school_name, s.reporter_name, s.reporter_position, s.phone, s.email,
-    s.period_start, s.period_end, s.submitted_at,
-    s.q8_weekly_lectures, s.q9_weekly_reach, s.q10_cumul_lectures, s.q11_cumul_reach, s.q12_has_lecture, s.q13_weekly_tuanri, s.q14_cumul_tuanri, s.q15_provincial_desc,
-    s.q16_weekly_recruit, s.q17_weekly_companies, s.q18_weekly_jobs, s.q19_cumul_recruit, s.q20_cumul_companies, s.q21_cumul_jobs,
-    s.q22_gov_units, s.q23_gov_jobs, s.q24_gov_students, s.q25_cumul_gov_units, s.q26_cumul_gov_jobs, s.q27_cumul_gov_students,
-    s.q28_ent_units, s.q29_ent_jobs, s.q30_ent_students, s.q31_cumul_ent_units, s.q32_cumul_ent_jobs, s.q33_cumul_ent_students,
-    s.q34_exp_sessions, s.q35_exp_reach, s.q36_cumul_exp_sessions, s.q37_cumul_exp_reach,
-    s.q38_new_shops, s.q39_cumul_shops, s.q40_cumul_students,
-    s.q41_national_landings, s.q41_national_companies, s.q41_national_talents, s.q41_national_funds, s.q42_national_desc,
-    s.q43_provincial_landings, s.q43_provincial_companies, s.q43_provincial_talents, s.q43_provincial_funds, s.q44_provincial_desc,
-    s.q45_city_shops_desc,
-    s.q46_has_research, s.q48_has_publicity,
-    (s.research_items || []).length, (s.publicity_items || []).length,
-    (s.planned_activities || []).length, (s.completed_activities || []).length
-  ]);
-
-  const ws = xlsx.utils.aoa_to_sheet([headers, ...rows]);
-  ws['!cols'] = [
-    { wch: 6 }, { wch: 22 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 22 },
-    { wch: 12 }, { wch: 12 }, { wch: 20 },
-    ...Array(44).fill({ wch: 12 })
-  ];
-
+  const ws = xlsx.utils.json_to_sheet(rows);
   const wb = xlsx.utils.book_new();
   xlsx.utils.book_append_sheet(wb, ws, '原始数据');
-  return xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+  return xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
 }
 
+export async function exportUnsubmittedExcel(weekStart, weekEnd) {
+  const schools = await getUnsubmittedSchools(weekStart, weekEnd);
 
-export async function exportUnsubmittedExcel(weekStart, weekEnd, unsubmittedList = null) {
+  const rows = schools.map((school, idx) => ({
+    '序号': idx + 1,
+    '高校名称': school,
+    '状态': '未提交',
+    '统计周期': `${weekStart || ''} ~ ${weekEnd || ''}`
+  }));
 
-  let unsubmitted;
-  if (unsubmittedList && Array.isArray(unsubmittedList)) {
-    // 使用外部传入的列表（与 stats 接口一致的全局去重逻辑）
-    unsubmitted = unsubmittedList;
-  } else {
-    // 找出本周已提交的高校（排除软删除）
-    const submittedSchools = new Set();
-    if (useMongo()) {
-      const docs = await Submission.find({ deleted: false, period_start: weekStart, period_end: weekEnd }).lean();
-      for (const sub of docs) {
-        submittedSchools.add(sub.school_name);
-      }
-    } else {
-      const db = getDb();
-      for (const sub of db.submissions) {
-        if (sub.deleted) continue;
+  const ws = xlsx.utils.json_to_sheet(rows);
+  const wb = xlsx.utils.book_new();
+  xlsx.utils.book_append_sheet(wb, ws, '未提交高校');
+  return xlsx.write(wb, { bookType: 'xlsx', type: 'buffer' });
+}
+
+/** 获取未提交高校列表 */
+async function getUnsubmittedSchools(weekStart, weekEnd) {
+  // 获取已提交学校（过滤软删除）
+  let submittedSchools = new Set();
+
+  if (useMongo()) {
+    const query = { deleted: false };
+    const docs = await Submission.find(query).lean();
+    const submissions = docs.map(doc => {
+      const obj = { ...doc };
+      delete obj._id; delete obj.__v; delete obj.createdAt; delete obj.updatedAt;
+      return obj;
+    });
+    for (const sub of submissions) {
+      if (weekStart && weekEnd) {
         if (sub.period_start === weekStart && sub.period_end === weekEnd) {
           submittedSchools.add(sub.school_name);
         }
+      } else {
+        submittedSchools.add(sub.school_name);
       }
     }
-    // 未提交的高校列表
-    unsubmitted = SCHOOLS.filter(s => !submittedSchools.has(s));
+  } else {
+    const db = getDb();
+    for (const sub of db.submissions) {
+      if (sub.deleted) continue;
+      if (weekStart && weekEnd) {
+        if (sub.period_start === weekStart && sub.period_end === weekEnd) {
+          submittedSchools.add(sub.school_name);
+        }
+      } else {
+        submittedSchools.add(sub.school_name);
+      }
+    }
   }
-  const total = SCHOOLS.length;
-  const count = unsubmitted.length;
 
-  // 当前时间
-  const now = new Date();
-  const timeStr = `${now.getFullYear()}年${String(now.getMonth() + 1).padStart(2, '0')}月${String(now.getDate()).padStart(2, '0')}日 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+  // 只统计在SCHOOLS列表中的学校
+  const unsubmitted = SCHOOLS.filter(school => !submittedSchools.has(school));
+  return unsubmitted;
+}
 
-  // ===== 构建 Sheet 数据 =====
-  const rows = [];
-
-  // Row 0: 标题
-  rows.push(['本周未提交周报高校清单', '', '', '', '']);
-
-  // Row 1: 统计周期
-  rows.push(['统计周期', `${weekStart} 至 ${weekEnd}`, '', '', '']);
-
-  // Row 2: 生成时间
-  rows.push(['生成时间', timeStr, '', '', '']);
-
-  // Row 3: 未提交数
-  rows.push(['未提交数', `${count} / ${total}`, '', '', '']);
-
-  // Row 4: 空行
-  rows.push(['', '', '', '', '']);
-
-  // Row 5: 表头
-  rows.push(['序号', '高校名称', '联系人', '联系电话', '备注']);
-
-  // 数据行
-  unsubmitted.forEach((school, i) => {
-    rows.push([i + 1, school, '', '', '']);
-  });
-
-  // ===== 合并单元格 =====
-  const merges = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },  // A1:F1 标题
-    { s: { r: 1, c: 1 }, e: { r: 1, c: 4 } },  // B2:E2 统计周期值
-    { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } },  // B3:E3 生成时间值
-    { s: { r: 3, c: 1 }, e: { r: 3, c: 4 } },  // B4:E4 未提交数值
-  ];
-
-  // ===== 列宽 =====
-  const cols = [
-    { wch: 8 },   // A 序号
-    { wch: 32 },  // B 高校名称
-    { wch: 14 },  // C 联系人
-    { wch: 16 },  // D 联系电话
-    { wch: 16 },  // E 备注
-  ];
-
-  const ws = xlsx.utils.aoa_to_sheet(rows);
-  ws['!merges'] = merges;
-  ws['!cols'] = cols;
-
-  const wb = xlsx.utils.book_new();
-  xlsx.utils.book_append_sheet(wb, ws, '未提交高校');
-
-  return xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  } catch (e) {
+    return dateStr;
+  }
 }
