@@ -238,7 +238,7 @@ async function buildStatsSheet(startDate, endDate) {
   const pTalent = sum(subs, 'q43_provincial_talents');
   const pFund   = sum(subs, 'q43_provincial_funds');
   const pDesc   = joinTexts(provActiveSubs, 'q44_provincial_desc');
-  const provincialText = buildCompetitionText(pLand, pComp, pTalent, pFund, pDesc);
+  const provincialCompText = buildCompetitionText(pLand, pComp, pTalent, pFund, pDesc);
 
   // --- 调研工作：收集所有调研条目 ---
   const researchList = [];
@@ -308,7 +308,7 @@ async function buildStatsSheet(startDate, endDate) {
   // ---- Rows 12-14: 创业带动就业 ----
   rows.push(['创业带动就业*', '青春小店情况', '', '\u201c挑战杯\u201d\u201c创青春\u201d\u201c揭榜挂帅\u201d\n成果孵化转化情况', '']);
   rows.push(['', '高校\u201c青春小店\u201d情况', '城市\u201c青春小店\u201d情况', '国赛获奖项目\n孵化转化情况[2]', '省赛获奖项目\n孵化转化情况[2]']);
-  rows.push(['', campusShopText, cityShopText, nationalText, provincialText]);
+  rows.push(['', campusShopText, cityShopText, nationalText, provincialCompText]);
 
   // ---- Rows 15-18: 其他有关工作 ----
   rows.push(['其他有关工作', '调研工作开展情况', '', '相关工作活动宣传情况', '']);
