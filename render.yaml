@@ -14,7 +14,7 @@ services:
       - key: MONGODB_URI
         value: ""
       - key: JWT_SECRET
-        generateValue: true
+        value: survey-system-v19-fixed-secret-key-2026
 
     disk:
       name: data
