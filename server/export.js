@@ -319,9 +319,9 @@ async function buildStatsSheet(startDate, endDate) {
     { s: { r: 3, c: 0 }, e: { r: 5, c: 0 } },   // A4:A6
     { s: { r: 3, c: 1 }, e: { r: 3, c: 2 } },   // B4:C4
     { s: { r: 4, c: 1 }, e: { r: 4, c: 2 } },   // B5:C5
-    { s: { r: 4, c: 3 }, e: { r: 4, c: 4 } },   // D5:E5
+    // D5:E5 NOT merged in template
     { s: { r: 5, c: 1 }, e: { r: 5, c: 2 } },   // B6:C6
-    { s: { r: 5, c: 3 }, e: { r: 5, c: 4 } },   // D6:E6
+    // D6:E6 NOT merged in template
 
     // --- 千校万岗 ---
     { s: { r: 6, c: 0 }, e: { r: 8, c: 0 } },   // A7:A9
@@ -348,10 +348,10 @@ async function buildStatsSheet(startDate, endDate) {
     { s: { r: 15, c: 0 }, e: { r: 17, c: 0 } }, // A16:A18
     { s: { r: 15, c: 1 }, e: { r: 15, c: 2 } }, // B16:C16
     { s: { r: 15, c: 3 }, e: { r: 15, c: 4 } }, // D16:E16
-    { s: { r: 16, c: 1 }, e: { r: 16, c: 2 } }, // B17:C17
-    { s: { r: 16, c: 3 }, e: { r: 16, c: 4 } }, // D17:E17
-    { s: { r: 17, c: 1 }, e: { r: 17, c: 2 } }, // B18:C18
-    { s: { r: 17, c: 3 }, e: { r: 17, c: 4 } }, // D18:E18
+    // Row 17 is data row in our code, but template has hidden row 17
+    // Row 18 is empty row in our code
+    // So we don't merge B17:C17 or D17:E17
+    // B18:C18 and D18:E18 are not needed since row 18 is empty
 
     // --- 备注 ---
     { s: { r: 18, c: 0 }, e: { r: 18, c: 4 } }, // A19:E19
