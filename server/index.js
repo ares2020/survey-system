@@ -7,7 +7,7 @@ import routes from './routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_FILE = path.resolve(process.env.DATA_DIR || __dirname, 'data.json');
+const DATA_FILE = path.resolve(process.env.DATA_DIR || '/opt/render/project/data', 'data.json');
 const PORT = process.env.PORT || 3001;
 
 const app = express();

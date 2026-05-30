@@ -6,7 +6,7 @@ import { Submission, Admin, AuditLog } from './models.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DATA_DIR = process.env.DATA_DIR || __dirname;
+const DATA_DIR = process.env.DATA_DIR || '/opt/render/project/data';
 const DATA_FILE = path.resolve(DATA_DIR, 'data.json');
 
 let data = null;
