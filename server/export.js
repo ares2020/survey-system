@@ -342,8 +342,7 @@ async function buildStatsSheet(startDate, endDate) {
     { s: { r: 12, c: 3 }, e: { r: 12, c: 4 } }, // D13:E13
     { s: { r: 13, c: 1 }, e: { r: 13, c: 2 } }, // B14:C14
     { s: { r: 13, c: 3 }, e: { r: 13, c: 4 } }, // D14:E14
-    { s: { r: 14, c: 1 }, e: { r: 14, c: 2 } }, // B15:C15
-    { s: { r: 14, c: 3 }, e: { r: 14, c: 4 } }, // D15:E15
+    // Row 15 data cells are NOT merged (B15, C15, D15, E15 separate)
 
     // --- 其他有关工作 ---
     { s: { r: 15, c: 0 }, e: { r: 17, c: 0 } }, // A16:A18
