@@ -71,7 +71,7 @@ export function saveData() {
 
 // ========== MongoDB文档清理 ==========
 
-function cleanMongoDoc(doc) {
+export function cleanMongoDoc(doc) {
   if (!doc) return doc;
   const obj = typeof doc.toObject === 'function' ? doc.toObject() : { ...doc };
   delete obj._id;

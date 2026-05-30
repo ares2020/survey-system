@@ -1,6 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import { getDb, saveData, getNextId, useMongo, logAudit } from './db.js';
+import { getDb, saveData, getNextId, useMongo, logAudit, cleanMongoDoc } from './db.js';
 import { authenticate, JWT_SECRET } from './auth.js';
 import { exportToExcel, exportUnsubmittedExcel, exportRawData } from './export.js';
 import { SCHOOLS } from './constants.js';
