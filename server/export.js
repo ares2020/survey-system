@@ -16,6 +16,23 @@ function sum(items, field) {
   return items.reduce((s, item) => s + num(item[field]), 0);
 }
 
+/** 收集所有非空文本，带高校名，用分号分隔；过滤占位符 */
+function joinTextsWithSchool(items, field, maxItems = 10) {
+  const PLACEHOLDERS = ['无', '无。', '（未填）', '—', '-', '暂无'];
+  const entries = [];
+  for (const item of items) {
+    const school = item.school_name || '未知高校';
+    const text = item[field];
+    if (!text || typeof text !== 'string') continue;
+    const trimmed = text.trim();
+    if (!trimmed || PLACEHOLDERS.includes(trimmed)) continue;
+    entries.push(`${school}：${trimmed}`);
+  }
+  if (!entries.length) return '';
+  const selected = entries.slice(0, maxItems);
+  return selected.join('；') + (entries.length > maxItems ? ` 等${entries.length}条` : '');
+}
+
 /** 收集所有非空文本，用分号分隔，最多取 maxItems 条；过滤占位符 */
 function joinTexts(items, field, maxItems = 3) {
   const PLACEHOLDERS = ['无', '无。', '（未填）', '—', '-', '暂无'];
@@ -129,8 +146,11 @@ async function buildStatsSheet(startDate, endDate) {
     provincialText += `累计开展${cProvLectures || 0}场，覆盖${cProvReach || 0}人次`;
   }
   if (!provincialText) provincialText = '—';
-  // 不再回退到旧描述拼接，避免55条冗长文本
-  // 仅当统计字段全为0时显示'—'
+  // 当统计字段全为0时，回退到带高校名的描述拼接
+  if (provincialText === '—') {
+    const descText = joinTextsWithSchool(subs, 'q15_provincial_desc', 10);
+    if (descText) provincialText = descText;
+  }
 
   // --- 校级宣讲（本周X场覆盖Y人；累计X场覆盖Y人）---
   const wLectures = sum(subs, 'q8_weekly_lectures');
@@ -219,8 +239,8 @@ async function buildStatsSheet(startDate, endDate) {
     : '—';
 
   // --- 青春小店：城市 ---
-  // 改为统计摘要：汇总城市青春小店描述，最多取5条，避免逐条拼接所有学校
-  const cityShopText = joinTexts(subs, 'q45_city_shops_desc', 5) || '—';
+  // 改为带高校名的描述拼接，最多10条
+  const cityShopText = joinTextsWithSchool(subs, 'q45_city_shops_desc', 10) || '—';
 
   // --- 国赛获奖项目 ---
   // 按照模板格式：项目落地X个，成立公司Y家，引进人才Z名，配套支持资金W万元。
@@ -229,7 +249,8 @@ async function buildStatsSheet(startDate, endDate) {
   const nComp   = sum(subs, 'q41_national_companies');
   const nTalent = sum(subs, 'q41_national_talents');
   const nFund   = sum(subs, 'q41_national_funds');
-  const nDesc   = joinTexts(natActiveSubs, 'q42_national_desc');
+  // 描述改为带高校名的拼接
+  const nDesc   = joinTextsWithSchool(natActiveSubs, 'q42_national_desc', 10);
   const nationalText = buildCompetitionText(nLand, nComp, nTalent, nFund, nDesc);
 
   // --- 省赛获奖项目 ---
@@ -238,13 +259,15 @@ async function buildStatsSheet(startDate, endDate) {
   const pComp   = sum(subs, 'q43_provincial_companies');
   const pTalent = sum(subs, 'q43_provincial_talents');
   const pFund   = sum(subs, 'q43_provincial_funds');
-  const pDesc   = joinTexts(provActiveSubs, 'q44_provincial_desc');
+  // 描述改为带高校名的拼接
+  const pDesc   = joinTextsWithSchool(provActiveSubs, 'q44_provincial_desc', 10);
   const provincialCompText = buildCompetitionText(pLand, pComp, pTalent, pFund, pDesc);
 
-  // --- 调研工作：收集所有调研条目（包含详细信息）---
+  // --- 调研工作：收集所有调研条目（带高校名，过滤占位符）---
   const researchList = [];
   const publicityList = [];
   for (const sub of subs) {
+    const school = sub.school_name || '未知高校';
     for (const item of sub.research_items || []) {
       const name = item.name || item.item_name || '';
       const date = item.item_date || '';
@@ -252,7 +275,7 @@ async function buildStatsSheet(startDate, endDate) {
       const result = item.item_result || '';
       const trimmed = name.trim();
       if (trimmed && trimmed !== '无' && trimmed !== '无。') {
-        let entry = trimmed;
+        let entry = `${school}：${trimmed}`;
         if (date) entry += ` (${date})`;
         if (org) entry += ` — ${org}`;
         if (result) entry += ` — ${result}`;
@@ -267,7 +290,7 @@ async function buildStatsSheet(startDate, endDate) {
       const link = item.link || '';
       const trimmed = name.trim();
       if (trimmed && trimmed !== '无' && trimmed !== '无。') {
-        let entry = trimmed;
+        let entry = `${school}：${trimmed}`;
         if (date) entry += ` (${date})`;
         if (media) entry += ` — ${media}`;
         if (level) entry += ` — ${level}`;
@@ -739,8 +762,13 @@ export async function exportUnsubmittedExcel(weekStart, weekEnd) {
 
 /** 获取未提交高校列表 */
 async function getUnsubmittedSchools(weekStart, weekEnd) {
-  // 获取已提交学校（过滤软删除）
+  // 获取已提交学校（过滤软删除，按周期重叠判断）
   let submittedSchools = new Set();
+
+  function hasOverlap(pStart, pEnd) {
+    if (!weekStart || !weekEnd) return true;
+    return pStart <= weekEnd && pEnd >= weekStart;
+  }
 
   if (useMongo()) {
     const query = { deleted: false };
@@ -751,11 +779,7 @@ async function getUnsubmittedSchools(weekStart, weekEnd) {
       return obj;
     });
     for (const sub of submissions) {
-      if (weekStart && weekEnd) {
-        if (sub.period_start === weekStart && sub.period_end === weekEnd) {
-          submittedSchools.add(sub.school_name);
-        }
-      } else {
+      if (hasOverlap(sub.period_start, sub.period_end)) {
         submittedSchools.add(sub.school_name);
       }
     }
@@ -763,11 +787,7 @@ async function getUnsubmittedSchools(weekStart, weekEnd) {
     const db = getDb();
     for (const sub of db.submissions) {
       if (sub.deleted) continue;
-      if (weekStart && weekEnd) {
-        if (sub.period_start === weekStart && sub.period_end === weekEnd) {
-          submittedSchools.add(sub.school_name);
-        }
-      } else {
+      if (hasOverlap(sub.period_start, sub.period_end)) {
         submittedSchools.add(sub.school_name);
       }
     }
