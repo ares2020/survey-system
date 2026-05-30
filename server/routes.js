@@ -712,6 +712,11 @@ router.get('/admin/stats', authenticate, async (req, res) => {
   }
 });
 
+// 获取高校列表（全部65所高校）
+router.get('/admin/schools', authenticate, (req, res) => {
+  res.json({ success: true, data: SCHOOLS });
+});
+
 // 提交列表（排除软删除记录）
 router.get('/admin/submissions', authenticate, async (req, res) => {
   try {
@@ -1131,7 +1136,7 @@ router.get('/admin/export/unsubmitted', authenticate, async (req, res) => {
     if (!weekStart || !weekEnd) {
       return res.status(400).json({ success: false, message: 'Missing weekStart or weekEnd' });
     }
-    const unsubmitted = await getUnsubmittedSchools();
+    const unsubmitted = await getUnsubmittedSchools(weekStart, weekEnd);
     const buffer = await exportUnsubmittedExcel(weekStart, weekEnd, unsubmitted);
 
     // 审计日志

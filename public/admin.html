@@ -773,23 +773,22 @@ container.appendChild(wrapper);
 
 // ==================== 数据列表页 ====================
 async function loadSchools() {
-try {
-// 获取已提交记录中的高校列表
-const res = await apiFetch('/api/admin/submissions?page=1&pageSize=1000&t=' + Date.now());
-const result = await res.json();
-const submitted = [...new Set((result.data || []).map(s => s.school_name).filter(Boolean))].sort();
+  try {
+    const res = await apiFetch('/api/admin/schools?t=' + Date.now());
+    const result = await res.json();
+    const schools = result.data || [];
 
-const select = $('filterSchool');
-select.innerHTML = '<option value="">全部高校</option>';
-submitted.forEach(s => {
-const opt = document.createElement('option');
-opt.value = s;
-opt.textContent = s;
-select.appendChild(opt);
-});
-} catch(e) {
-console.error('loadSchools error:', e);
-}
+    const select = $('filterSchool');
+    select.innerHTML = '<option value="">全部高校</option>';
+    schools.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      select.appendChild(opt);
+    });
+  } catch(e) {
+    console.error('loadSchools error:', e);
+  }
 }
 
 async function loadSubmissions() {
