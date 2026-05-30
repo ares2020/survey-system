@@ -115,7 +115,7 @@ async function buildStatsSheet(startDate, endDate) {
   // ===== 汇总各项数据 =====
 
   // --- 省级宣讲 ---
-  // 按照模板格式：累计开展X场，覆盖Y人次
+  // 按照模板格式：累计开展X场，覆盖Y人次；改为统计摘要，不逐条拼接所有学校描述
   const wProvLectures = sum(subs, 'q15_provincial_new');
   const wProvReach = sum(subs, 'q15_provincial_cover');
   const cProvLectures = sum(subs, 'q15_provincial_total');
@@ -128,14 +128,9 @@ async function buildStatsSheet(startDate, endDate) {
     if (provincialText) provincialText += '；';
     provincialText += `累计开展${cProvLectures || 0}场，覆盖${cProvReach || 0}人次`;
   }
-  if (!provincialText) {
-    // 如果没有新字段数据，回退到旧描述
-    const lectureActiveSubs = subs.filter(s => num(s.q8_weekly_lectures) > 0);
-    provincialText = joinTexts(lectureActiveSubs, 'q15_provincial_desc') || '—';
-  }
-  // 保留描述作为参考（如果需要）
-  const lectureActiveSubs = subs.filter(s => num(s.q8_weekly_lectures) > 0);
-  const provincialDesc = joinTexts(lectureActiveSubs, 'q15_provincial_desc') || '—';
+  if (!provincialText) provincialText = '—';
+  // 不再回退到旧描述拼接，避免55条冗长文本
+  // 仅当统计字段全为0时显示'—'
 
   // --- 校级宣讲（本周X场覆盖Y人；累计X场覆盖Y人）---
   const wLectures = sum(subs, 'q8_weekly_lectures');
@@ -171,9 +166,16 @@ async function buildStatsSheet(startDate, endDate) {
   const cCompanies  = sum(subs, 'q20_cumul_companies');
   const cJobs       = sum(subs, 'q21_cumul_jobs');
 
-  const recruitText = (wRecruit > 0 || cRecruit > 0)
-    ? `本周${wRecruit || 0}场；累计${cRecruit || 0}场`
-    : '—';
+  let recruitText = '';
+  if (wRecruit > 0 || wCompanies > 0 || wJobs > 0) {
+    recruitText += `本周${wRecruit || 0}场，参与企业${wCompanies || 0}家，提供岗位${wJobs || 0}个`;
+  }
+  if (cRecruit > 0 || cCompanies > 0 || cJobs > 0) {
+    if (recruitText) recruitText += '；';
+    recruitText += `累计${cRecruit || 0}场，参与企业${cCompanies || 0}家，提供岗位${cJobs || 0}个`;
+  }
+  if (!recruitText) recruitText = '—';
+
   // 按照模板格式：累计参与企业数（岗位数）
   const companiesText = (cCompanies > 0 || cJobs > 0)
     ? `${cCompanies || 0}家（${cJobs || 0}个岗位）`
@@ -217,7 +219,8 @@ async function buildStatsSheet(startDate, endDate) {
     : '—';
 
   // --- 青春小店：城市 ---
-  const cityShopText = joinTexts(subs, 'q45_city_shops_desc') || '—';
+  // 改为统计摘要：汇总城市青春小店描述，最多取5条，避免逐条拼接所有学校
+  const cityShopText = joinTexts(subs, 'q45_city_shops_desc', 5) || '—';
 
   // --- 国赛获奖项目 ---
   // 按照模板格式：项目落地X个，成立公司Y家，引进人才Z名，配套支持资金W万元。

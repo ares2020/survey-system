@@ -118,22 +118,12 @@ function numOrNull(val) {
   return n;
 }
 
-// ========== WAF 预检中间件：拦截包含 SQL 关键字的请求 ==========
-router.use((req, res, next) => {
-  if (req.body && typeof req.body === 'object') {
-    const hasSql = Object.values(req.body).some(v => {
-      if (typeof v === 'string') return containsSqlKeyword(v);
-      if (typeof v === 'object' && v !== null) {
-        return JSON.stringify(v).split(/["\s]/).some(part => containsSqlKeyword(part));
-      }
-      return false;
-    });
-    if (hasSql) {
-      return res.status(400).json({ success: false, message: '输入内容包含不允许的字符' });
-    }
-  }
-  next();
-});
+// ========== WAF 预检中间件：已移除（避免误报） ==========
+// 原逻辑：对所有请求体做SQL关键词检测，返回400
+// 问题：误报严重（如 update@fudan.edu.cn、"本周开展了update相关工作"）
+// 修复：MongoDB 使用参数化查询天然防注入，无需应用层关键词拦截。
+// 保留入库前的 sanitizeSql 清理，确保发送到Cloudflare时不会触发WAF。
+// router.use((req, res, next) => { ... });
 
 // ========== 请求体验证 ==========
 function validateBody(body) {
@@ -1055,11 +1045,11 @@ router.post('/admin/import', authenticate, async (req, res) => {
 
     saveData();
 
-    // 审计日志
+    // 审计日志（批量导入：合并为一条日志）
     logAudit({
       action: 'IMPORT',
       user: req.admin?.username,
-      details: { total: stats.total, success: stats.success, failed: stats.failed },
+      details: { total: stats.total, success: stats.success, failed: stats.failed, schools: (items.slice(0, 10).map(b => b.university || b.school_name).filter(Boolean).join('、') + (items.length > 10 ? ` 等${items.length}条` : '')) || '批量导入' },
       ip: req.ip || req.socket.remoteAddress
     }).catch(() => {});
 
