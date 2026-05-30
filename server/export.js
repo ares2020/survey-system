@@ -261,8 +261,8 @@ async function buildStatsSheet(startDate, endDate) {
 
   // ---- Rows 6-8: 千校万岗 ----
   rows.push([
-    '共青团"千校万岗"系列招聘计划',
-    '各级团组织主办（含联合有关部门单位共同主办）的其他招聘活动情况（不包括"央企云招聘""就业有位来"活动）',
+    '共青团\u201c千校万岗\u201d系列招聘计划',
+    '各级团组织主办（含联合有关部门单位共同主办）的其他招聘活动情况（不包括\u201c央企云招聘\u201d\u201c就业有位来\u201d活动）',
     '',
     '',
     ''
@@ -272,7 +272,7 @@ async function buildStatsSheet(startDate, endDate) {
 
   // ---- Rows 9-11: 大学生就业实习/扬帆计划 ----
   rows.push([
-    '大学生就业实习\n"扬帆计划"',
+    '大学生就业实习\n\u201c扬帆计划\u201d',
     '大学生就业实习（含政务实习、企业实习）情况',
     '',
     '大学生职场体验活动情况',
@@ -282,8 +282,8 @@ async function buildStatsSheet(startDate, endDate) {
   rows.push(['', govText, entText, expText, '']);
 
   // ---- Rows 12-14: 创业带动就业 ----
-  rows.push(['创业带动就业*', '青春小店情况', '', '"挑战杯""创青春""揭榜挂帅"\n成果孵化转化情况', '']);
-  rows.push(['', '高校"青春小店"情况', '城市"青春小店"情况', '国赛获奖项目\n孵化转化情况[2]', '省赛获奖项目\n孵化转化情况[2]']);
+  rows.push(['创业带动就业*', '青春小店情况', '', '\u201c挑战杯\u201d\u201c创青春\u201d\u201c揭榜挂帅\u201d\n成果孵化转化情况', '']);
+  rows.push(['', '高校\u201c青春小店\u201d情况', '城市\u201c青春小店\u201d情况', '国赛获奖项目\n孵化转化情况[2]', '省赛获奖项目\n孵化转化情况[2]']);
   rows.push(['', campusShopText, cityShopText, nationalText, provincialText]);
 
   // ---- Rows 15-18: 其他有关工作 ----
