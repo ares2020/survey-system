@@ -1177,4 +1177,96 @@ router.get('/admin/schools', authenticate, (req, res) => {
   res.json({ success: true, data: SCHOOLS });
 });
 
+// ========== 新增：一键清空回收站（永久删除所有软删除记录）==========
+router.delete('/admin/recycle-bin/clear', authenticate, async (req, res) => {
+  try {
+    const db = getDb();
+    const deletedItems = db.submissions.filter(s => s.deleted);
+    const count = deletedItems.length;
+
+    if (count === 0) {
+      return res.json({ success: true, message: '回收站已为空', count: 0 });
+    }
+
+    const schoolNames = deletedItems.map(s => s.school_name).filter(Boolean).slice(0, 10);
+
+    db.submissions = db.submissions.filter(s => !s.deleted);
+    saveData();
+
+    if (useMongo()) {
+      try {
+        await Submission.deleteMany({ deleted: true });
+      } catch (e) {
+        console.error('MongoDB recycle bin clear failed:', e.message);
+      }
+    }
+
+    logAudit({
+      action: 'CLEAR_RECYCLE_BIN',
+      user: req.admin?.username,
+      details: { count, schools: schoolNames.join('、') + (count > 10 ? ` 等${count}条` : '') },
+      ip: req.ip || req.socket.remoteAddress
+    }).catch(() => {});
+
+    res.json({ success: true, message: `已清空回收站，共删除${count}条记录`, count });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ========== 新增：批量删除（合并日志）==========
+router.post('/admin/submissions/batch-delete', authenticate, async (req, res) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: '请提供要删除的ID数组' });
+    }
+
+    const db = getDb();
+    const results = { success: 0, failed: 0, notFound: [] };
+    const deletedSchools = [];
+
+    for (const id of ids) {
+      const item = db.submissions.find(s => s.id === id);
+      if (!item) {
+        results.notFound.push(id);
+        results.failed++;
+        continue;
+      }
+      item.deleted = true;
+      item.deleted_at = new Date().toISOString();
+      deletedSchools.push(item.school_name || `#${id}`);
+      results.success++;
+    }
+
+    saveData();
+
+    if (useMongo()) {
+      try {
+        await Submission.updateMany(
+          { id: { $in: ids } },
+          { deleted: true, deleted_at: new Date().toISOString() }
+        );
+      } catch (e) {
+        console.error('MongoDB batch delete failed:', e.message);
+      }
+    }
+
+    logAudit({
+      action: 'BATCH_DELETE',
+      user: req.admin?.username,
+      details: {
+        count: results.success,
+        ids: ids.slice(0, 20),
+        schools: deletedSchools.slice(0, 10).join('、') + (deletedSchools.length > 10 ? ` 等${deletedSchools.length}条` : '')
+      },
+      ip: req.ip || req.socket.remoteAddress
+    }).catch(() => {});
+
+    res.json({ success: true, message: `批量删除完成：成功${results.success}条，失败${results.failed}条`, data: results });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 export default router;

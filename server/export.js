@@ -63,14 +63,12 @@ async function getLatestSubs(startDate, endDate) {
   for (const sub of submissions) {
     // 过滤软删除记录
     if (sub.deleted) continue;
-    // 日期过滤
+    // 日期范围过滤：按 period_start/period_end 筛选统计周期
     if (startDate || endDate) {
-      const subDateStr = sub.submitted_at ?
-        (sub.submitted_at instanceof Date ?
-          sub.submitted_at.toISOString().substring(0, 10) :
-          String(sub.submitted_at).substring(0, 10)) : '';
-      if (startDate && subDateStr < startDate) continue;
-      if (endDate && subDateStr > endDate) continue;
+      const pStart = sub.period_start || '';
+      const pEnd = sub.period_end || '';
+      if (startDate && pEnd && pEnd < startDate) continue;
+      if (endDate && pStart && pStart > endDate) continue;
     }
     const existing = map.get(sub.school_name);
     const subDate = sub.submitted_at ? new Date(sub.submitted_at) : new Date(0);
@@ -240,22 +238,38 @@ async function buildStatsSheet(startDate, endDate) {
   const pDesc   = joinTexts(provActiveSubs, 'q44_provincial_desc');
   const provincialCompText = buildCompetitionText(pLand, pComp, pTalent, pFund, pDesc);
 
-  // --- 调研工作：收集所有调研条目 ---
+  // --- 调研工作：收集所有调研条目（包含详细信息）---
   const researchList = [];
   const publicityList = [];
   for (const sub of subs) {
     for (const item of sub.research_items || []) {
       const name = item.name || item.item_name || '';
+      const date = item.item_date || '';
+      const org = item.item_org || '';
+      const result = item.item_result || '';
       const trimmed = name.trim();
       if (trimmed && trimmed !== '无' && trimmed !== '无。') {
-        researchList.push(`${trimmed}`);
+        let entry = trimmed;
+        if (date) entry += ` (${date})`;
+        if (org) entry += ` — ${org}`;
+        if (result) entry += ` — ${result}`;
+        researchList.push(entry);
       }
     }
     for (const item of sub.publicity_items || []) {
-      const activity = item.activity_name || item.name || '';
-      const trimmed = activity.trim();
+      const name = item.activity_name || item.name || '';
+      const date = item.pub_date || '';
+      const media = item.media_name || '';
+      const level = item.level || '';
+      const link = item.link || '';
+      const trimmed = name.trim();
       if (trimmed && trimmed !== '无' && trimmed !== '无。') {
-        publicityList.push(`${trimmed}`);
+        let entry = trimmed;
+        if (date) entry += ` (${date})`;
+        if (media) entry += ` — ${media}`;
+        if (level) entry += ` — ${level}`;
+        if (link) entry += ` — ${link}`;
+        publicityList.push(entry);
       }
     }
   }
@@ -600,17 +614,16 @@ export async function exportRawData(startDate, endDate) {
 
   if (startDate || endDate) {
     subs = subs.filter(sub => {
-      const subDateStr = sub.submitted_at ?
-        (sub.submitted_at instanceof Date ?
-          sub.submitted_at.toISOString().substring(0, 10) :
-          String(sub.submitted_at).substring(0, 10)) : '';
-      if (startDate && subDateStr < startDate) return false;
-      if (endDate && subDateStr > endDate) return false;
+      const pStart = sub.period_start || '';
+      const pEnd = sub.period_end || '';
+      if (startDate && pEnd && pEnd < startDate) return false;
+      if (endDate && pStart && pStart > endDate) return false;
       return true;
     });
   }
 
   const rows = subs.map(sub => ({
+    // 基础信息
     'ID': sub.id,
     '高校名称': sub.school_name || '',
     '填报人': sub.reporter_name || '',
@@ -619,25 +632,84 @@ export async function exportRawData(startDate, endDate) {
     '邮箱': sub.email || '',
     '统计周期': `${sub.period_start || ''} ~ ${sub.period_end || ''}`,
     '提交时间': formatDate(sub.submitted_at),
+
+    // 模块I: 就业引航计划 - 宣讲
     '本周宣讲场次': sub.q8_weekly_lectures || 0,
     '宣讲覆盖人次': sub.q9_weekly_reach || 0,
     '累计宣讲场次': sub.q10_cumul_lectures || 0,
     '累计覆盖人次': sub.q11_cumul_reach || 0,
+    '是否有宣讲': sub.q12_has_lecture || '',
+
+    // 模块I: 主题团日
+    '本周主题团日场次': sub.q13_weekly_tuanri || 0,
+    '累计主题团日场次': sub.q14_cumul_tuanri || 0,
+
+    // 模块I: 省级宣讲
+    '省级宣讲本周场次': sub.q15_provincial_new || 0,
+    '省级宣讲本周覆盖': sub.q15_provincial_cover || 0,
+    '省级宣讲累计场次': sub.q15_provincial_total || 0,
+    '省级宣讲累计覆盖': sub.q15_provincial_total_cover || 0,
+    '省级宣讲描述': sub.q15_provincial_desc || '',
+
+    // 模块II: 千校万岗
     '本周招聘场次': sub.q16_weekly_recruit || 0,
-    '参与企业数': sub.q17_weekly_companies || 0,
-    '提供岗位数': sub.q18_weekly_jobs || 0,
-    '政务实习单位': sub.q22_gov_units || 0,
-    '政务实习岗位': sub.q23_gov_jobs || 0,
-    '政务实习学生': sub.q24_gov_students || 0,
-    '企业实习单位': sub.q28_ent_units || 0,
-    '企业实习岗位': sub.q29_ent_jobs || 0,
-    '企业实习学生': sub.q30_ent_students || 0,
-    '职场体验场次': sub.q34_exp_sessions || 0,
-    '职场体验人次': sub.q35_exp_reach || 0,
+    '本周参与企业数': sub.q17_weekly_companies || 0,
+    '本周提供岗位数': sub.q18_weekly_jobs || 0,
+    '累计招聘场次': sub.q19_cumul_recruit || 0,
+    '累计参与企业数': sub.q20_cumul_companies || 0,
+    '累计提供岗位数': sub.q21_cumul_jobs || 0,
+
+    // 模块III: 政务实习
+    '政务实习新增单位': sub.q22_gov_units || 0,
+    '政务实习新增岗位': sub.q23_gov_jobs || 0,
+    '政务实习新增学生': sub.q24_gov_students || 0,
+    '政务实习累计单位': sub.q25_cumul_gov_units || 0,
+    '政务实习累计岗位': sub.q26_cumul_gov_jobs || 0,
+    '政务实习累计学生': sub.q27_cumul_gov_students || 0,
+
+    // 模块III: 企业实习
+    '企业实习新增单位': sub.q28_ent_units || 0,
+    '企业实习新增岗位': sub.q29_ent_jobs || 0,
+    '企业实习新增学生': sub.q30_ent_students || 0,
+    '企业实习累计单位': sub.q31_cumul_ent_units || 0,
+    '企业实习累计岗位': sub.q32_cumul_ent_jobs || 0,
+    '企业实习累计学生': sub.q33_cumul_ent_students || 0,
+
+    // 模块III: 职场体验
+    '职场体验本周场次': sub.q34_exp_sessions || 0,
+    '职场体验本周人次': sub.q35_exp_reach || 0,
+    '职场体验累计场次': sub.q36_cumul_exp_sessions || 0,
+    '职场体验累计人次': sub.q37_cumul_exp_reach || 0,
+
+    // 模块IV: 创业带动就业
     '新增青春小店': sub.q38_new_shops || 0,
     '累计青春小店': sub.q39_cumul_shops || 0,
+    '创业学生数': sub.q40_cumul_students || 0,
+    '城市青春小店描述': sub.q45_city_shops_desc || '',
+
+    // 模块IV: 国赛
     '国赛落地项目': sub.q41_national_landings || 0,
+    '国赛成立公司': sub.q41_national_companies || 0,
+    '国赛引进人才': sub.q41_national_talents || 0,
+    '国赛配套资金': sub.q41_national_funds || 0,
+    '国赛描述': sub.q42_national_desc || '',
+
+    // 模块IV: 省赛
     '省赛落地项目': sub.q43_provincial_landings || 0,
+    '省赛成立公司': sub.q43_provincial_companies || 0,
+    '省赛引进人才': sub.q43_provincial_talents || 0,
+    '省赛配套资金': sub.q43_provincial_funds || 0,
+    '省赛描述': sub.q44_provincial_desc || '',
+
+    // 模块V: 其他工作
+    '是否有调研': sub.q46_has_research || '',
+    '是否有宣传': sub.q48_has_publicity || '',
+
+    // 子表数据 (JSON格式便于追溯)
+    '调研活动明细(JSON)': sub.research_items && sub.research_items.length ? JSON.stringify(sub.research_items) : '',
+    '宣传报道明细(JSON)': sub.publicity_items && sub.publicity_items.length ? JSON.stringify(sub.publicity_items) : '',
+    '计划活动明细(JSON)': sub.planned_activities && sub.planned_activities.length ? JSON.stringify(sub.planned_activities) : '',
+    '已完成活动明细(JSON)': sub.completed_activities && sub.completed_activities.length ? JSON.stringify(sub.completed_activities) : '',
   }));
 
   const ws = xlsx.utils.json_to_sheet(rows);
