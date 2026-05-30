@@ -65,9 +65,17 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// Static files
+// Static files - disable cache to ensure updates are immediate
 const publicPath = path.resolve(__dirname, '../public');
-app.use(express.static(publicPath));
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html') || req.path.endsWith('.js') || req.path.endsWith('.css')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+app.use(express.static(publicPath, { etag: false, lastModified: false }));
 
 // Entry page
 app.get('/', (req, res) => { res.sendFile(path.join(publicPath, 'index.html')); });
