@@ -459,9 +459,12 @@ async function buildActivitiesSheet(startDate, endDate) {
   let filteredSubmissions = submissions.filter(s => !s.deleted);
   if (startDate || endDate) {
     filteredSubmissions = filteredSubmissions.filter(sub => {
-      const subDate = sub.submitted_at ? sub.submitted_at.substring(0, 10) : '';
-      if (startDate && subDate < startDate) return false;
-      if (endDate && subDate > endDate) return false;
+      const subDateStr = sub.submitted_at ?
+        (sub.submitted_at instanceof Date ?
+          sub.submitted_at.toISOString().substring(0, 10) :
+          String(sub.submitted_at).substring(0, 10)) : '';
+      if (startDate && subDateStr < startDate) return false;
+      if (endDate && subDateStr > endDate) return false;
       return true;
     });
   }
@@ -586,10 +589,22 @@ export async function exportRawData(startDate, endDate) {
 
   // 日期过滤
   if (startDate) {
-    subs = subs.filter(s => s.submitted_at && s.submitted_at.substring(0, 10) >= startDate);
+    subs = subs.filter(s => {
+      const subDateStr = s.submitted_at ?
+        (s.submitted_at instanceof Date ?
+          s.submitted_at.toISOString().substring(0, 10) :
+          String(s.submitted_at).substring(0, 10)) : '';
+      return subDateStr >= startDate;
+    });
   }
   if (endDate) {
-    subs = subs.filter(s => s.submitted_at && s.submitted_at.substring(0, 10) <= endDate);
+    subs = subs.filter(s => {
+      const subDateStr = s.submitted_at ?
+        (s.submitted_at instanceof Date ?
+          s.submitted_at.toISOString().substring(0, 10) :
+          String(s.submitted_at).substring(0, 10)) : '';
+      return subDateStr <= endDate;
+    });
   }
 
   // 所有字段作为列
