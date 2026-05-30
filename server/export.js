@@ -286,16 +286,17 @@ async function buildStatsSheet(startDate, endDate) {
   rows.push(['', '高校"青春小店"', '城市"青春小店"', '国赛获奖项目\n孵化转化情况[2]', '省赛获奖项目\n孵化转化情况[2]']);
   rows.push(['', campusShopText, cityShopText, nationalText, provincialText]);
 
-  // ---- Rows 15-17: 其他有关工作 ----
+  // ---- Rows 15-18: 其他有关工作 ----
   rows.push(['其他有关工作', '调研工作开展情况', '', '相关工作活动宣传情况', '']);
+  rows.push(['', '', '', '', '']);  // Row 17: 隐藏行（空行）
   rows.push([
     '',
     researchList.length ? researchList.join('\n') : '—',
     '',
     publicityList.length ? publicityList.join('\n') : '—',
     ''
-  ]);
-  rows.push(['', '', '', '', '']);
+  ]);  // Row 18: 数据行
+  rows.push(['', '', '', '', '']);  // Row 19: 空行
 
   // Row 18: 备注
   rows.push([
@@ -345,16 +346,14 @@ async function buildStatsSheet(startDate, endDate) {
     // Row 14 and 15 are NOT merged (B14, C14, D14, E14 have separate content)
 
     // --- 其他有关工作 ---
-    { s: { r: 15, c: 0 }, e: { r: 17, c: 0 } }, // A16:A18
+    { s: { r: 15, c: 0 }, e: { r: 18, c: 0 } }, // A16:A19 (changed from A16:A18)
     { s: { r: 15, c: 1 }, e: { r: 15, c: 2 } }, // B16:C16
     { s: { r: 15, c: 3 }, e: { r: 15, c: 4 } }, // D16:E16
-    // Row 17 is data row in our code, but template has hidden row 17
-    // Row 18 is empty row in our code
-    // So we don't merge B17:C17 or D17:E17
-    // B18:C18 and D18:E18 are not needed since row 18 is empty
+    { s: { r: 17, c: 1 }, e: { r: 17, c: 2 } }, // B18:C18
+    { s: { r: 17, c: 3 }, e: { r: 17, c: 4 } }, // D18:E18
 
     // --- 备注 ---
-    { s: { r: 18, c: 0 }, e: { r: 18, c: 4 } }, // A19:E19
+    { s: { r: 19, c: 0 }, e: { r: 19, c: 4 } }, // A20:E20
   ];
 
   // ===== 列宽 =====
@@ -388,9 +387,10 @@ async function buildStatsSheet(startDate, endDate) {
     { hpt: 24 },   // Row 13
     { hpt: 56 },   // Row 14 数据
     { hpt: 24 },   // Row 15
-    { hpt: 80 },   // Row 16 调研/宣传内容可能较多
-    { hpt: 12 },   // Row 17 空行
-    { hpt: 56 },   // Row 18 备注
+    { hpt: 12 },   // Row 16 空行（模板隐藏行）
+    { hpt: 80 },   // Row 17 调研/宣传内容
+    { hpt: 12 },   // Row 18 空行
+    { hpt: 56 },   // Row 19 备注
   ];
 
   return ws;
