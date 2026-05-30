@@ -448,9 +448,10 @@ function buildCompetitionText(landings, companies, talents, funds, desc) {
   if (funds > 0) parts.push(`配套支持资金${Number(funds).toFixed(2)}万元`);
 
   let text = parts.length ? parts.join('，') : '（未填）';
-  if (desc) {
-    text += '\n' + desc;
-  }
+  // 不拼接描述文本，只显示数字汇总
+  // if (desc) {
+  //   text += '\n' + desc;
+  // }
   return text;
 }
 
