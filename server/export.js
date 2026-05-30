@@ -313,7 +313,7 @@ async function buildStatsSheet(startDate, endDate) {
     // 省份日期行
     { s: { r: 1, c: 0 }, e: { r: 1, c: 4 } },
     // 一级表头
-    { s: { r: 2, c: 0 }, e: { r: 2, c: 4 } },
+    { s: { r: 2, c: 1 }, e: { r: 2, c: 4 } }, // B3:E3
 
     // --- 大学生就业引航计划 ---
     { s: { r: 3, c: 0 }, e: { r: 5, c: 0 } },   // A4:A6
@@ -335,7 +335,8 @@ async function buildStatsSheet(startDate, endDate) {
     { s: { r: 9, c: 0 }, e: { r: 11, c: 0 } },  // A10:A12
     { s: { r: 9, c: 1 }, e: { r: 9, c: 2 } },   // B10:C10
     { s: { r: 9, c: 3 }, e: { r: 9, c: 4 } },   // D10:E10
-    { s: { r: 11, c: 3 }, e: { r: 11, c: 4 } }, // D12:E12 (workplace experience data)
+    { s: { r: 10, c: 3 }, e: { r: 10, c: 4 } }, // D11:E11
+    { s: { r: 11, c: 3 }, e: { r: 11, c: 4 } }, // D12:E12
 
     // --- 创业带动就业 ---
     { s: { r: 12, c: 0 }, e: { r: 14, c: 0 } }, // A13:A15
