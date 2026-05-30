@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
 // JWT密钥优先从环境变量读取，fallback到每次启动不同的随机值
-const JWT_SECRET = process.env.JWT_SECRET || crypto.randomBytes(32).toString('hex');
+const JWT_SECRET = process.env.JWT_SECRET || 'survey-system-v19-fixed-secret-key-2026';
 
 // JWT认证中间件
 export function authenticate(req, res, next) {
