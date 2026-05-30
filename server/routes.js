@@ -559,8 +559,16 @@ router.post('/admin/login', async (req, res) => {
     }
 
     const { username, password } = req.body;
-    const db = getDb();
-    const admin = db.admins.find(a => a.username === username);
+    
+    let admin;
+    if (useMongo()) {
+      // MongoDB 模式下直接从 MongoDB 查询
+      admin = await Admin.findOne({ username }).lean();
+      if (admin) admin = cleanMongoDoc(admin);
+    } else {
+      const db = getDb();
+      admin = db.admins.find(a => a.username === username);
+    }
 
     if (!admin) {
       recordLoginAttempt(clientIp, false);
@@ -589,14 +597,18 @@ router.post('/admin/login', async (req, res) => {
 });
 
 // 统计概览（排除软删除记录）
-router.get('/admin/stats', authenticate, (req, res) => {
+router.get('/admin/stats', authenticate, async (req, res) => {
   try {
-    const db = getDb();
+    let activeSubmissions;
+    if (useMongo()) {
+      activeSubmissions = await Submission.find({ deleted: false }).lean();
+      activeSubmissions = activeSubmissions.map(cleanMongoDoc);
+    } else {
+      const db = getDb();
+      activeSubmissions = db.submissions.filter(s => !s.deleted);
+    }
     const { monday, sunday, mondayObj } = getThisWeekRange();
     const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
-    // 只统计未删除的提交
-    const activeSubmissions = db.submissions.filter(s => !s.deleted);
 
     // 本周提交：基于 submitted_at 的日期部分比较
     const thisWeekSubs = activeSubmissions.filter(s => {
@@ -655,19 +667,28 @@ router.get('/admin/stats', authenticate, (req, res) => {
 });
 
 // 提交列表（排除软删除记录）
-router.get('/admin/submissions', authenticate, (req, res) => {
+router.get('/admin/submissions', authenticate, async (req, res) => {
   try {
-    const db = getDb();
     const pageCheck = validatePage(req.query.page);
     const page = pageCheck.value;
     const pageSize = capPageSize(req.query.pageSize);
 
-    // 只显示未删除的记录
-    let list = db.submissions.filter(s => !s.deleted).sort((a, b) => b.id - a.id);
-
-    if (req.query.school) {
-      list = list.filter(s => s.school_name && s.school_name.includes(req.query.school));
+    let list;
+    if (useMongo()) {
+      const query = { deleted: false };
+      if (req.query.school) {
+        query.school_name = { $regex: req.query.school, $options: 'i' };
+      }
+      const docs = await Submission.find(query).sort({ id: -1 }).lean();
+      list = docs.map(cleanMongoDoc);
+    } else {
+      const db = getDb();
+      list = db.submissions.filter(s => !s.deleted).sort((a, b) => b.id - a.id);
+      if (req.query.school) {
+        list = list.filter(s => s.school_name && s.school_name.includes(req.query.school));
+      }
     }
+    
     if (req.query.startDate) {
       list = list.filter(s => {
         const subDate = s.submitted_at ? s.submitted_at.substring(0, 10) : '';
