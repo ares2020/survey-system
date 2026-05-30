@@ -610,9 +610,18 @@ router.get('/admin/stats', authenticate, async (req, res) => {
     const { monday, sunday, mondayObj } = getThisWeekRange();
     const fmt = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
+    // 辅助函数：安全获取日期字符串
+    const getDateStr = (s) => {
+      const val = s.submitted_at;
+      if (!val) return '';
+      if (typeof val === 'string') return val.substring(0, 10);
+      if (val instanceof Date) return val.toISOString().substring(0, 10);
+      return String(val).substring(0, 10);
+    };
+
     // 本周提交：基于 submitted_at 的日期部分比较
     const thisWeekSubs = activeSubmissions.filter(s => {
-      const subDate = s.submitted_at ? s.submitted_at.substring(0, 10) : '';
+      const subDate = getDateStr(s);
       return subDate >= monday && subDate <= sunday;
     });
 
@@ -636,7 +645,7 @@ router.get('/admin/stats', authenticate, async (req, res) => {
       const we = fmt(weekEnd);
 
       const count = activeSubmissions.filter(s => {
-        const subDate = s.submitted_at ? s.submitted_at.substring(0, 10) : '';
+        const subDate = getDateStr(s);
         return subDate >= ws && subDate <= we;
       }).length;
 
