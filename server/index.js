@@ -81,16 +81,26 @@ app.use(express.static(publicPath, { etag: false, lastModified: false }));
 app.get('/', (req, res) => { res.sendFile(path.join(publicPath, 'index.html')); });
 
 // Health check + data status
-app.get('/health', (req, res) => {
-  const db = getDb();
-  const mongoStatus = useMongo();
+app.get('/health', async (req, res) => {
+  let recordCount = 0;
+  if (useMongo()) {
+    try {
+      const { Submission } = await import('./models.js');
+      recordCount = await Submission.countDocuments({ deleted: false });
+    } catch (e) {
+      recordCount = -1;
+    }
+  } else {
+    const db = getDb();
+    recordCount = db.submissions?.length || 0;
+  }
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
     dataDir: process.env.DATA_DIR || 'default',
     dataFile: DATA_FILE,
-    records: db.submissions?.length || 0,
-    mongo: mongoStatus,
+    records: recordCount,
+    mongo: useMongo(),
     mongoUri: process.env.MONGODB_URI ? 'configured' : 'not configured',
     version: 'v19-test'
   });
