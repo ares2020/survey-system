@@ -261,7 +261,11 @@ function mapSubmission(body) {
                           (m1.hasLecture === false || m1.hasLecture === 'no' ? '否' : '');
   const q13_weekly_tuanri = num(m1.themeDayNew);
   const q14_cumul_tuanri = numOrNull(m1.themeDayTotal);
-  const q15_provincial_desc = cleanString(m1.provinceLecture);
+  const q15_provincial_new = num(m1.provinceLectureNew);
+  const q15_provincial_cover = num(m1.provinceLectureCover);
+  const q15_provincial_total = numOrNull(m1.provinceLectureTotal);
+  const q15_provincial_total_cover = numOrNull(m1.provinceLectureTotalCover);
+  const q15_provincial_desc = cleanString(m1.provinceLectureDesc || m1.provinceLecture);
 
   // === 模块II: 千校万岗 ===
   const m2 = body.module2 || {};
@@ -397,7 +401,7 @@ function mapSubmission(body) {
     submitted_at: new Date().toISOString(),
 
     q8_weekly_lectures, q9_weekly_reach, q10_cumul_lectures, q11_cumul_reach,
-    q12_has_lecture, q13_weekly_tuanri, q14_cumul_tuanri, q15_provincial_desc,
+    q12_has_lecture, q13_weekly_tuanri, q14_cumul_tuanri, q15_provincial_new, q15_provincial_cover, q15_provincial_total, q15_provincial_total_cover, q15_provincial_desc,
     q16_weekly_recruit, q17_weekly_companies, q18_weekly_jobs,
     q19_cumul_recruit, q20_cumul_companies, q21_cumul_jobs,
     q22_gov_units, q23_gov_jobs, q24_gov_students,
@@ -702,7 +706,7 @@ router.get('/admin/stats', authenticate, async (req, res) => {
         thisWeekEnd: sunday,
         totalSchools: SCHOOLS.length,
         submittedSchools: submittedSchools.length,
-        coverageRate: submittedSchools.length / SCHOOLS.length,
+        coverageRate: Number((submittedSchools.length / SCHOOLS.length * 100).toFixed(2)),
         unsubmittedSchools: unsubmitted,
         schoolSubmissionList: submittedSchools,
         weeklyTrend

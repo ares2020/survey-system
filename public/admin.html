@@ -765,19 +765,14 @@ container.appendChild(wrapper);
 // ==================== 数据列表页 ====================
 async function loadSchools() {
 try {
-// 方法1：从已提交记录中提取
+// 获取已提交记录中的高校列表
 const res = await apiFetch('/api/admin/submissions?page=1&pageSize=1000&t=' + Date.now());
 const result = await res.json();
-const submitted = [...new Set((result.data || []).map(s => s.school_name).filter(Boolean))];
-
-// 方法2：获取全部学校列表（用于筛选）
-const res2 = await apiFetch('/api/admin/schools?t=' + Date.now());
-const result2 = await res2.json();
-const allSchools = result2.data || [];
+const submitted = [...new Set((result.data || []).map(s => s.school_name).filter(Boolean))].sort();
 
 const select = $('filterSchool');
 select.innerHTML = '<option value="">全部高校</option>';
-allSchools.forEach(s => {
+submitted.forEach(s => {
 const opt = document.createElement('option');
 opt.value = s;
 opt.textContent = s;

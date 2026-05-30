@@ -117,7 +117,21 @@ async function buildStatsSheet(startDate, endDate) {
   // ===== 汇总各项数据 =====
 
   // --- 省级宣讲 ---
-  // 只取本周有宣讲活动的学校描述
+  // 按照模板格式：累计开展X场，覆盖Y人次
+  const wProvLectures = sum(subs, 'q15_provincial_new');
+  const wProvReach = sum(subs, 'q15_provincial_cover');
+  const cProvLectures = sum(subs, 'q15_provincial_total');
+  const cProvReach = sum(subs, 'q15_provincial_total_cover');
+  let provincialText = '';
+  if (wProvLectures > 0 || wProvReach > 0) {
+    provincialText += `本周${wProvLectures || 0}场，覆盖${wProvReach || 0}人次`;
+  }
+  if (cProvLectures > 0 || cProvReach > 0) {
+    if (provincialText) provincialText += '；';
+    provincialText += `累计开展${cProvLectures || 0}场，覆盖${cProvReach || 0}人次`;
+  }
+  if (!provincialText) provincialText = '—';
+  // 保留描述作为参考（如果需要）
   const lectureActiveSubs = subs.filter(s => num(s.q8_weekly_lectures) > 0);
   const provincialDesc = joinTexts(lectureActiveSubs, 'q15_provincial_desc') || '—';
 
